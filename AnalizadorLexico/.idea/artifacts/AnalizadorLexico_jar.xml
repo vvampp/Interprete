@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="AnalizadorLexico:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/AnalizadorLexico_jar</output-path>
+    <root id="archive" name="AnalizadorLexico.jar">
+      <element id="module-output" name="AnalizadorLexico" />
+    </root>
+  </artifact>
+</component>
