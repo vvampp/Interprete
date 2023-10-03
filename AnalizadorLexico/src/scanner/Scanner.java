@@ -90,6 +90,46 @@ public class Scanner {
                         this.estado = 26;
                         lexema += c;
                     }
+                    else if(c == '+'){
+                        this.estado = 33;
+                        lexema += c;
+                    }
+                    else if(c == '-'){
+                        this.estado = 34;
+                        lexema += c;
+                    }
+                    else if(c == '*'){
+                        this.estado = 35;
+                        lexema += c;
+                    }
+                    else if(c == '{'){
+                        this.estado = 36;
+                        lexema += c;
+                    }
+                    else if(c == '}'){
+                        this.estado = 37;
+                        lexema += c;
+                    }
+                    else if(c == '('){
+                        this.estado = 38;
+                        lexema += c;
+                    }
+                    else if(c == ')'){
+                        this.estado = 39;
+                        lexema += c;
+                    }
+                    else if(c == ','){
+                        this.estado = 40;
+                        lexema += c;
+                    }
+                    else if(c == '.'){
+                        this.estado = 41;
+                        lexema += c;
+                    }
+                    else if(c == ';'){
+                        this.estado = 42;
+                        lexema += c;
+                    }
                     break;
 
                 case 1:
@@ -342,6 +382,66 @@ public class Scanner {
                         i++;
                         c = this.source.charAt(i);
                     }
+                    this.estado = 0;
+                    lexema = "";
+                    break;
+                case 33: //+
+                    this.ingresarToken(TipoToken.PLUS, lexema);
+                    i--;
+                    this.estado = 0;
+                    lexema = "";
+                    break;
+                case 34://-
+                    this.ingresarToken(TipoToken.MINUS, lexema);
+                    i--;
+                    this.estado = 0;
+                    lexema = "";
+                    break;
+                case 35://*
+                    this.ingresarToken(TipoToken.STAR, lexema);
+                    i--;
+                    this.estado = 0;
+                    lexema = "";
+                    break;
+                case 36://{
+                    this.ingresarToken(TipoToken.LEFT_BRACE, lexema);
+                    i--;
+                    this.estado = 0;
+                    lexema = "";
+                    break;
+                case 37://}
+                    this.ingresarToken(TipoToken.RIGHT_BRACE, lexema);
+                    i--;
+                    this.estado = 0;
+                    lexema = "";
+                    break;
+                case 38://(
+                    this.ingresarToken(TipoToken.LEFT_PAREN, lexema);
+                    i--;
+                    this.estado = 0;
+                    lexema = "";
+                    break;
+                case 39://)
+                    this.ingresarToken(TipoToken.RIGHT_PAREN, lexema);
+                    i--;
+                    this.estado = 0;
+                    lexema = "";
+                    break;
+                case 40://,
+                    this.ingresarToken(TipoToken.COMMA, lexema);
+                    i--;
+                    this.estado = 0;
+                    lexema = "";
+                    break;
+                case 41://.
+                    this.ingresarToken(TipoToken.DOT, lexema);
+                    i--;
+                    this.estado = 0;
+                    lexema = "";
+                    break;
+                case 42://;
+                    this.ingresarToken(TipoToken.SEMICOLON, lexema);
+                    i--;
                     this.estado = 0;
                     lexema = "";
                     break;
