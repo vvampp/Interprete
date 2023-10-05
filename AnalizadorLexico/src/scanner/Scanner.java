@@ -1,5 +1,5 @@
 package scanner;
-
+// hola mundo
 import java.util.ArrayList;
 import java.util.HashMap;
 import tokens.*;
@@ -84,7 +84,7 @@ public class Scanner {
                     }
                     else if(c == '"'){
                         this.estado = 24;
-                        lexema += c;
+                        //lexema += c;
                     }
                     else if(c == '/'){
                         this.estado = 26;
@@ -316,7 +316,7 @@ public class Scanner {
                 // Los estados del 24 al 25 analizan los strings
                 case 24:
                     if(c == '"'){
-                        lexema += c;
+                        //lexema += c;
                         this.ingresarToken(TipoToken.STRING, lexema);
                         this.estado = 0;
                         lexema = "";
@@ -326,7 +326,7 @@ public class Scanner {
                         return this.tokens;
                     }
                    else{
-                       this.estado = 24;
+                       //this.estado = 24;
                        lexema += c;
                     }
                     break;
@@ -358,9 +358,9 @@ public class Scanner {
                     if(c == '*'){
                         this.estado = 28;
                     }
-                    else{
+                    /*else{
                         this.estado = 27;
-                    }
+                    }*/
                     break;
 
                 case 28:
@@ -369,9 +369,9 @@ public class Scanner {
                         this.estado = 0;
                         lexema = "";
                     }
-                    else if(c == '*'){
+                    /*else if(c == '*'){
                         this.estado = 28;
-                    }
+                    }*/
                     else{
                         this.estado = 27;
                     }
