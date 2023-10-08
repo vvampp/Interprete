@@ -1,5 +1,4 @@
 package scanner;
-// hola mundo
 import java.util.ArrayList;
 import java.util.HashMap;
 import tokens.*;
@@ -11,7 +10,7 @@ public class Scanner {
     // Mapa de palabras reservadas asociada a la clase Scanner
     private static final Map<String, TipoToken> palabrasReservadas;
 
-    // Bloques de codigo estatico, se ejecutan al cargar en memoria la clase
+    // Bloques de codigo estatico, se ej ecutan al cargar en memoria la clase
     static {
         palabrasReservadas = new HashMap<>();
         palabrasReservadas.put("and",    TipoToken.AND);
@@ -27,6 +26,8 @@ public class Scanner {
         palabrasReservadas.put("true",   TipoToken.TRUE);
         palabrasReservadas.put("var",    TipoToken.VAR);
         palabrasReservadas.put("while",  TipoToken.WHILE);
+        palabrasReservadas.put("EOF",  TipoToken.EOF);
+
     }
 
     private String source;
@@ -43,19 +44,19 @@ public class Scanner {
         this();
         this.source = source + " ";
     }
-
     // Metodo que escanea una linea de codigo o un archivo
     // y retorna una lista de tokens
     public List<Token> scan(){
         String lexema = "";
         char c;
-
+        int numLinea = 1;
         for(int i = 0; i < this.source.length(); i++){
             c = this.source.charAt(i);
 
+
             switch (this.estado){
                 // Del estado 0 al 12, analizamos los simbolos especiales
-                // los estados 2,3,5,6,8,9,11,12 son finales, por lo que no se
+                // los estados 2,3,5,6,8,9,11,1 son finales, por lo que no se
                 // agregan al switch
                 case 0:
                     if(c == '>'){
@@ -84,7 +85,7 @@ public class Scanner {
                     }
                     else if(c == '"'){
                         this.estado = 24;
-                        //lexema += c;
+                        lexema += c;
                     }
                     else if(c == '/'){
                         this.estado = 26;
@@ -129,6 +130,18 @@ public class Scanner {
                     else if(c == ';'){
                         this.estado = 42;
                         lexema += c;
+                    }
+                    else if(c=='\n'){
+                        numLinea++;
+                    }
+                    else if(!(c == ' ' || c=='\t')) {
+                        if (c == 13) {
+                            this.estado = 0;
+                            lexema = "";
+                        } else {
+                            Interprete.error(numLinea, "Caracter introducido no valido", String.valueOf(c));
+
+                        }
                     }
                     break;
 
@@ -251,7 +264,7 @@ public class Scanner {
                     // por lo que si recibimos cualquier otro caracter
                     // es un error
                     else{
-                        Interprete.error(0, "Se esperaba un digito", lexema);
+                        Interprete.error(numLinea, "Se esperaba un digito", lexema);
                         return this.tokens;
                     }
 
@@ -284,7 +297,7 @@ public class Scanner {
                         lexema += c;
                     }
                     else{
-                        Interprete.error(0, "Se esperaba un digito", lexema);
+                        Interprete.error(numLinea, "Se esperaba un digito", lexema);
                         return this.tokens;
                     }
                     break;
@@ -295,7 +308,7 @@ public class Scanner {
                         lexema += c;
                     }
                     else{
-                        Interprete.error(0, "Se esperaba un digito", lexema);
+                        Interprete.error(numLinea, "Se esperaba un digito", lexema);
                         return this.tokens;
                     }
                     break;
@@ -316,13 +329,13 @@ public class Scanner {
                 // Los estados del 24 al 25 analizan los strings
                 case 24:
                     if(c == '"'){
-                        //lexema += c;
-                        this.ingresarToken(TipoToken.STRING, lexema);
+                        lexema += c;
+                        this.ingresarToken(TipoToken.STRING,lexema, lexema.substring(1, lexema.length() - 1));
                         this.estado = 0;
                         lexema = "";
                     }
                     else if(c == '\n'){
-                        Interprete.error(0, "No se cerro la cadena [Se esperaba \"].", lexema);
+                        Interprete.error(numLinea, "No se cerro la cadena. Se esperaba \"", "String");
                         return this.tokens;
                     }
                    else{
@@ -382,6 +395,7 @@ public class Scanner {
                         i++;
                         c = this.source.charAt(i);
                     }
+                    numLinea++;
                     this.estado = 0;
                     lexema = "";
                     break;
@@ -451,7 +465,7 @@ public class Scanner {
         // Si el automata quedo esperando el cierre de un comentario
         // pero la entrada termino, significa error
         if(this.estado == 27 || this.estado == 28){
-            Interprete.error(0, "No se cerro el comentario [Se esperaba */].", "Comentario[/*]");
+            Interprete.error(numLinea, "No se cerro el comentario [Se esperaba */].", "Comentario[/*]");
         }
 
         return this.tokens;
@@ -463,6 +477,11 @@ public class Scanner {
     }
     private void ingresarToken(String lexema, Object literal){
         Token t = new Token(TipoToken.NUMBER, lexema, literal);
+        this.tokens.add(t);
+    }
+
+    private void ingresarToken(TipoToken tipo,String lexema, Object literal){
+        Token t = new Token(TipoToken.STRING, lexema, literal);
         this.tokens.add(t);
     }
 
