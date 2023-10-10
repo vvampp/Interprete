@@ -467,6 +467,7 @@ public class Scanner {
         if(this.estado == 27 || this.estado == 28){
             Interprete.error(numLinea, "No se cerro el comentario [Se esperaba */].", "Comentario[/*]");
         }
+        this.ingresarToken(TipoToken.EOF,"EOF");
 
         return this.tokens;
     }
