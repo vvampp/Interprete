@@ -1,4 +1,4 @@
-package presentacion;
+package parser;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -68,6 +68,8 @@ public class Interprete {
             for(Token token : tokens){
                 System.out.println(token);
             }
+            Parser parser = new ASDR(tokens);
+            parser.parse();
         }
         catch (Exception ex){
             ex.printStackTrace();

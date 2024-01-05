@@ -1,5 +1,6 @@
 package parser;
 
+import java.util.ArrayList;
 import java.util.List;
 import tokens.*;
 
@@ -685,5 +686,87 @@ public class ASDR implements Parser{
         }
     }
 
+    /*      OTROS      */
+// FUNCTION -> id ( PARAMETERS_OPC ) BLOCK
+    public void FUNCTION(){
+        switch (this.preanalisis.getTipo()){
+            case IDENTIFIER:
+                match(TipoToken.IDENTIFIER);
+                match(TipoToken.LEFT_PAREN);
+                PARAMETERS_OPC();
+                match(TipoToken.RIGHT_PAREN);
+                break;
+            default:
+                this.hayErrores=true;
+                System.out.println("Error en la lexema "+ preanalisis.lexema + ": Se esperaba un id");
+                break;
+        }
+    }
 
+    /*
+    PARAMETERS_OPC -> PARAMETERS
+                    -> E
+    */
+    public void PARAMETERS_OPC(){
+        if(preanalisis.tipo == TipoToken.IDENTIFIER){
+            PARAMETERS();
+        }
+    }
+
+    // PARAMETERS -> id PARAMETERS_2
+    public void PARAMETERS(){
+        switch (this.preanalisis.getTipo()) {
+            case IDENTIFIER:
+                match(TipoToken.IDENTIFIER);
+                PARAMETERS_2();
+                break;
+
+            default:
+                this.hayErrores = true;
+                System.out.println("Error en la lexema "+ this.preanalisis.lexema + ": Se esperaba un id");
+                break;
+        }
+    }
+
+    /*
+    PARAMETERS_2 -> , id PARAMETERS_2
+                -> E
+    */
+    public void PARAMETERS_2(){
+        // Es una funcion recursiva, pero modificada a su forma iterativa
+        while(this.preanalisis.tipo == TipoToken.COMMA){
+            match(TipoToken.COMMA);
+            if(this.preanalisis.tipo == TipoToken.IDENTIFIER){
+                match(TipoToken.IDENTIFIER);
+            }
+        }
+    }
+
+    /*
+    ARGUMENTS_OPC -> EXPRESSION ARGUMENTS
+                    -> E
+    */
+    public void ARGUMENTS_OPC(){
+        if(preanalisis.tipo == TipoToken.BANG ||
+                preanalisis.tipo == TipoToken.MINUS ||
+                preanalisis.tipo == TipoToken.TRUE ||
+                preanalisis.tipo == TipoToken.FALSE ||
+                preanalisis.tipo == TipoToken.NULL ||
+                preanalisis.tipo == TipoToken.NUMBER ||
+                preanalisis.tipo == TipoToken.STRING ||
+                preanalisis.tipo == TipoToken.IDENTIFIER ||
+                preanalisis.tipo == TipoToken.LEFT_PAREN){
+            ARGUMENTS();
+        }
+    }
+
+    /*
+    ARGUMENTS -> , EXPRESSION ARGUMENTS
+                -> E
+    */
+    public void ARGUMENTS(){
+        while(preanalisis.tipo == TipoToken.COMMA){
+            match(TipoToken.COMMA);
+        }
+    }
 }

@@ -4,7 +4,7 @@ import java.util.HashMap;
 import tokens.*;
 import java.util.List;
 import java.util.Map;
-import presentacion.Interprete;
+import parser.Interprete;
 
 public class Scanner {
     // Mapa de palabras reservadas asociada a la clase Scanner
