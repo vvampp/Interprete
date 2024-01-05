@@ -246,4 +246,59 @@ public class ASDR implements Parser{
         }
     }
 
+    // IF_STMT -> if (EXPRESSION) STATEMENT ELSE_STATEMENT
+    public void IF_STMT(){
+        if(preanalisis.tipo==TipoToken.IF){
+            match(TipoToken.IF);
+            match(TipoToken.LEFT_PAREN);
+            //EXPRESSION();
+            match(TipoToken.RIGHT_PAREN);
+            STATEMENT();
+            if(preanalisis.tipo == TipoToken.ELSE) {
+                ELSE_STATEMENT();
+            }
+        }else{
+            hayErrores=true;
+            System.out.println("Error en la lexema "+ preanalisis.lexema + ": Se esperaba un 'if'");
+        }
+    }
+
+    /*
+    ELSE_STATEMENT -> else STATEMENT
+                     -> E
+     */
+    public void ELSE_STATEMENT(){
+        if(preanalisis.tipo == TipoToken.ELSE){
+            match(TipoToken.ELSE);
+            STATEMENT();
+        }
+    }
+
+    public void PRINT_STMT(){
+        if(preanalisis.tipo == TipoToken.PRINT){
+            match(TipoToken.PRINT);
+            //EXPRESSION();
+            match(TipoToken.SEMICOLON);
+        }else{
+            hayErrores=true;
+            System.out.println("Error en la lexema "+ preanalisis.lexema + ": Se esperaba un 'print'");
+        }
+    }
+
+    // RETURN_STMT -> return RETURN_EXP_OPC ;
+    public void RETURN_STMT(){
+        if(preanalisis.tipo == TipoToken.RETURN){
+            match(TipoToken.RETURN);
+            if(preanalisis.tipo == TipoToken.BANG || preanalisis.tipo == TipoToken.MINUS || preanalisis.tipo == TipoToken.TRUE || preanalisis.tipo == TipoToken.FALSE || preanalisis.tipo == TipoToken.NULL || preanalisis.tipo == TipoToken.NUMBER || preanalisis.tipo == TipoToken.STRING || preanalisis.tipo == TipoToken.IDENTIFIER || preanalisis.tipo == TipoToken.LEFT_PAREN){
+                //RETURN_EXP_OPC();
+            }
+            match(TipoToken.SEMICOLON);
+        }else{
+            hayErrores=true;
+            System.out.println("Error en la lexema "+ preanalisis.lexema + ": Se esperaba un 'return'");
+        }
+    }
+
+
+
 }
