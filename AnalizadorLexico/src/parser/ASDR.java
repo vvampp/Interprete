@@ -225,9 +225,11 @@ public class ASDR implements Parser{
             case BANG, MINUS, TRUE, FALSE, NULL, NUMBER, STRING, IDENTIFIER, LEFT_PAREN:
                 //EXPRESSION();
                 match(TipoToken.SEMICOLON);
+                break;
 
             case SEMICOLON:
                 match(TipoToken.SEMICOLON);
+                break;
 
             default:
                 hayErrores = true;
@@ -328,6 +330,316 @@ public class ASDR implements Parser{
         }else{
             this.hayErrores = true;
             System.out.println("Error en la lexema "+ this.preanalisis.lexema + ": Se esperaba un 'LEFT_BRACE'");
+        }
+    }
+
+
+    //Expresiones
+
+    // EXPRESSION -> ASSIGNMENT
+    public void EXPRESSION(){
+        ASSIGNMENT();
+    }
+
+    // ASSIGNMENT -> LOGIC_OR ASSIGNMENT_OPC
+    public void ASSIGNMENT(){
+        LOGIC_OR();
+        if(preanalisis.tipo == TipoToken.EQUAL){
+            ASSIGNMENT_OPC();
+        }
+    }
+
+    /*ASSIGNMENT_OPC -> = EXPRESSION
+                     -> E */
+    public void ASSIGNMENT_OPC(){
+        if(preanalisis.tipo == TipoToken.EQUAL){
+            match(TipoToken.EQUAL);
+            EXPRESSION();
+        }
+    }
+
+    // LOGIC_OR -> LOGIC_AND LOGIC_OR_2
+    public void LOGIC_OR(){
+        LOGIC_AND();
+        if(preanalisis.tipo == TipoToken.OR){
+            LOGIC_OR_2();
+        }
+    }
+
+    /*
+    LOGIC_OR_2 -> or LOGIC_AND LOGIC_OR_2
+                 -> E
+     */
+    public void LOGIC_OR_2(){
+        if(preanalisis.tipo == TipoToken.OR){
+            match(TipoToken.OR);
+            LOGIC_AND();
+            LOGIC_OR_2();
+        }
+    }
+
+    // LOGIC_AND -> EQUALITY LOGIC_AND_2
+    public void LOGIC_AND(){
+        EQUALITY();
+        if(preanalisis.tipo == TipoToken.AND){
+            LOGIC_AND_2();
+        }
+    }
+
+    /*
+    LOGIC_AND_2 -> and EQUALITY LOGIC_AND_2
+                   -> E
+    */
+    public void LOGIC_AND_2(){
+        switch (this.preanalisis.getTipo()){
+            case BANG_EQUAL:
+                match(TipoToken.BANG_EQUAL);
+                COMPARISON();
+                LOGIC_AND_2();
+                break;
+            case EQUAL_EQUAL:
+                match(TipoToken.EQUAL_EQUAL);
+                COMPARISON();
+                LOGIC_AND_2();
+                break;
+            default:
+                this.hayErrores=true;
+                break;
+        }
+    }
+
+    // EQUALITY -> COMPARISON EQUALITY_2
+    public void EQUALITY(){
+        COMPARISON();
+        if(preanalisis.tipo == TipoToken.BANG_EQUAL || preanalisis.tipo == TipoToken.EQUAL_EQUAL){
+            EQUALITY_2();
+        }
+    }
+
+    /*
+    EQUALITY_2 -> != COMPARISON EQUALITY_2
+                 -> == COMPARISON EQUALITY_2
+                 -> E
+     */
+    public void EQUALITY_2(){
+        switch (this.preanalisis.getTipo()){
+            case BANG_EQUAL:
+                match(TipoToken.BANG_EQUAL);
+                COMPARISON();
+                EQUALITY_2();
+                break;
+
+            case EQUAL_EQUAL:
+                match(TipoToken.EQUAL_EQUAL);
+                COMPARISON();
+                EQUALITY_2();
+                break;
+            default:
+                this.hayErrores=true;
+                break;
+        }
+
+    }
+
+    // COMPARISON -> TERM COMPARISON_2
+    public void COMPARISON(){
+        TERM();
+        if(preanalisis.tipo == TipoToken.GREATER ||preanalisis.tipo == TipoToken.GREATER_EQUAL || preanalisis.tipo == TipoToken.LESS || preanalisis.tipo == TipoToken.LESS_EQUAL){
+            COMPARISON_2();
+        }
+    }
+
+    /*
+    COMPARISON_2 -> > TERM COMPARISON_2
+                    -> >= TERM COMPARISON_2
+                    -> < TERM COMPARISON_2
+                    -> <= TERM COMPARISON_2
+                    -> E
+    */
+    public void COMPARISON_2(){
+        switch (this.preanalisis.getTipo()){
+            case GREATER:
+                match(TipoToken.GREATER);
+                TERM();
+                COMPARISON_2();
+                break;
+
+            case GREATER_EQUAL:
+                match(TipoToken.GREATER_EQUAL);
+                TERM();
+                COMPARISON_2();
+                break;
+
+            case LESS:
+                match(TipoToken.LESS);
+                break;
+
+            case LESS_EQUAL:
+                match(TipoToken.LESS_EQUAL);
+                break;
+
+            default:
+                this.hayErrores=true;
+                break;
+        }
+    }
+
+    // TERM -> FACTOR TERM_2
+    public void TERM(){
+        if(preanalisis.tipo == TipoToken.MINUS || preanalisis.tipo == TipoToken.PLUS){
+            TERM_2();
+        }
+    }
+
+    /*
+    TERM_2 -> - FACTOR TERM_2
+            -> + FACTOR TERM_2
+            -> E
+    */
+    public void TERM_2(){
+        switch (this.preanalisis.getTipo()){
+            case MINUS:
+                match(TipoToken.MINUS);
+                FACTOR();
+                TERM_2();
+                break;
+
+            case PLUS:
+                match(TipoToken.PLUS);
+                FACTOR();
+                TERM_2();
+
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    // FACTOR -> UNARY FACTOR_2
+    public void FACTOR(){
+        UNARY();
+        if(preanalisis.tipo == TipoToken.STAR || preanalisis.tipo == TipoToken.SLASH){
+            FACTOR_2();
+        }
+    }
+
+    /*
+    FACTOR_2 -> / UNARY FACTOR_2
+                -> * UNARY FACTOR_2
+                -> E
+    */
+    public void FACTOR_2(){
+        switch (this.preanalisis.getTipo()){
+            case SLASH:
+                match(TipoToken.SLASH);
+                FACTOR_2();
+
+            case STAR:
+                match(TipoToken.STAR);
+                FACTOR_2();
+
+            default:
+                break;
+        }
+    }
+
+    /*
+    UNARY -> ! UNARY
+            -> - UNARY
+            -> CALL
+    */
+    public void UNARY(){
+        switch (this.preanalisis.getTipo()){
+            case BANG:
+                match(TipoToken.BANG);
+                UNARY();
+                break;
+
+            case MINUS:
+                match(TipoToken.MINUS);
+                UNARY();
+                break;
+
+            case TRUE, FALSE, NULL, NUMBER, STRING, IDENTIFIER, LEFT_PAREN:
+                CALL();
+                break;
+
+            default:
+                this.hayErrores = true;
+                System.out.println("Error detectado en la lexema "+ this.preanalisis.lexema);
+                break;
+
+        }
+    }
+
+    // CALL -> PRIMARY CALL_2
+    public void CALL(){
+        PRIMARY();
+        if(preanalisis.tipo == TipoToken.LEFT_PAREN){
+            CALL_2();
+        }
+    }
+
+    /*
+    CALL_2 -> ( ARGUMENTS_OPC ) CALL_2
+            -> E
+    */
+    public void CALL_2(){
+        if(preanalisis.tipo == TipoToken.LEFT_PAREN){
+            match(TipoToken.LEFT_PAREN);
+            //Argumentos que retorna Arguments_opc()
+            match(TipoToken.RIGHT_PAREN);
+            CALL_2();
+        }
+    }
+
+    /*
+    PRIMARY -> true
+            -> false
+            -> null
+            -> number
+            -> string
+            -> id
+            -> ( EXPRESSION )
+    */
+    public void PRIMARY() {
+        switch (this.preanalisis.getTipo()) {
+            case TRUE:
+                match(TipoToken.TRUE);
+                break;
+
+            case FALSE:
+                match(TipoToken.FALSE);
+                break;
+
+            case NULL:
+                match(TipoToken.NULL);
+                break;
+
+            case NUMBER:
+                match(TipoToken.NUMBER);
+                break;
+
+            case STRING:
+                match(TipoToken.STRING);
+                break;
+
+
+            case IDENTIFIER:
+                match(TipoToken.IDENTIFIER);
+                break;
+
+            case LEFT_PAREN:
+                match(TipoToken.LEFT_PAREN);
+                EXPRESSION();
+                match(TipoToken.RIGHT_PAREN);
+                break;
+
+            default:
+                this.hayErrores = true;
+                System.out.println("Error detectado en la lexema " + this.preanalisis.lexema);
+
         }
     }
 
