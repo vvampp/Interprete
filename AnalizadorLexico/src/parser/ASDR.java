@@ -1,5 +1,7 @@
 package parser;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import tokens.*;
 
@@ -56,9 +58,80 @@ public class ASDR implements Parser{
         return this.tokens.get(this.i - 1);
     }
 
-    // Gramatica
+    /*      GRAMATICA      */
 
     // PROGRAM -> DECLARATION
 
+    /**
+     *
+     *
+     *
+     */
+
+
+
+    /*      SENTENCIAS      */
+
+    /*
+    STATEMENT -> EXPR_STMT
+            -> FOR_STMT
+            -> IF_STMT
+            -> PRINT_STMT
+            -> RETURN_STMT
+            -> WHILE_STMT
+            -> BLOCK
+    */
+
+    public void STATEMENT(){
+        switch (this.preanalisis.getTipo()){
+            case BANG, MINUS, TRUE, FALSE, NULL, NUMBER, STRING, IDENTIFIER, LEFT_PAREN:
+                //EXPR_STMT();
+
+            case FOR:
+                //FOR_STMT();
+
+            case IF:
+                 //IF_STMT();
+
+            case PRINT:
+                //PRINT_STMT();
+
+            case RETURN:
+                //RETURN_STMT();
+
+            case WHILE:
+                //WHILE_STMT();
+
+            case LEFT_BRACE:
+                //BLOCK();
+
+            default:
+                this.hayErrores = true;
+                System.out.println("Error en la lexema "+ this.preanalisis.getLexema());
+                return;
+        }
+    }
+
+    // EXPR_STMT -> EXPRESSION ;
+    public void EXPR_STMT(){
+        //EXPRESSION();
+        match(TipoToken.SEMICOLON);
+    }
+
+    // FOR_STMT -> for ( FOR_STMT_1 FOR_STMT_2 FOR_STMT_3 ) STATEMENT
+    public void FOR_STMT(){
+        if(preanalisis.getTipo() == TipoToken.FOR){
+            match(TipoToken.FOR);
+            match(TipoToken.LEFT_PAREN);
+            //FOR_STMT_1();
+            //FOR_STMT_2();
+            //FOR_STMT_3();
+            match(TipoToken.RIGHT_PAREN);
+            //STATEMENT();
+        }else{
+            this.hayErrores = true;
+            System.out.println("Error en el primer elemento del for de la lexema "+this.preanalisis.getLexema());
+        }
+    }
 
 }
