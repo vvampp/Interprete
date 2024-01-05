@@ -299,6 +299,37 @@ public class ASDR implements Parser{
         }
     }
 
+    public void RETURN_EXP_OPC(){
+        if(preanalisis.tipo == TipoToken.BANG || preanalisis.tipo == TipoToken.MINUS || preanalisis.tipo == TipoToken.TRUE || preanalisis.tipo == TipoToken.FALSE || preanalisis.tipo == TipoToken.NULL || preanalisis.tipo == TipoToken.NUMBER || preanalisis.tipo == TipoToken.STRING || preanalisis.tipo == TipoToken.IDENTIFIER || preanalisis.tipo == TipoToken.LEFT_PAREN){
+            //EXPRESSION();
+        }
+    }
+
+    // WHILE_STMT -> while ( EXPRESSION ) STATEMENT
+    public void WHILE_STMT(){
+        if(preanalisis.tipo == TipoToken.WHILE){
+            match(TipoToken.WHILE);
+            match(TipoToken.LEFT_PAREN);
+            // EXPRESSION();
+            match(TipoToken.RIGHT_PAREN);
+            STATEMENT();
+        }else{
+            hayErrores=true;
+            System.out.println("Error en la lexema "+ preanalisis.lexema + ": Se esperaba un 'while'");
+        }
+    }
+
+    // BLOCK -> { DECLARATION }
+    public void BLOCK(){
+        if(this.preanalisis.tipo == TipoToken.LEFT_BRACE){
+            match(TipoToken.LEFT_BRACE);
+            DECLARATION();
+            match(TipoToken.RIGHT_BRACE);
+        }else{
+            this.hayErrores = true;
+            System.out.println("Error en la lexema "+ this.preanalisis.lexema + ": Se esperaba un 'LEFT_BRACE'");
+        }
+    }
 
 
 }
