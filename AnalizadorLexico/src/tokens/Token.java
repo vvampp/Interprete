@@ -1,9 +1,9 @@
 package tokens;
 
 public class Token {
-    private TipoToken tipo;
-    private String lexema;
-    private Object literal;
+    public TipoToken tipo;
+    public String lexema;
+    public Object literal;
 
     public Token(){
         this.literal = null;

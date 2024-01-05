@@ -61,14 +61,70 @@ public class ASDR implements Parser{
     /*      GRAMATICA      */
 
     // PROGRAM -> DECLARATION
+    /*
+    DECLARATION   -> FUN_DECL DECLARATION
+                    -> VAR_DECL DECLARATION
+                    -> STATEMENT DECLARATION
+                    -> E
+    */
+    public void DECLARATION(){
+        switch (this.preanalisis.getTipo()){
+            case FUN:
+                //FUN_DECL();
+                DECLARATION();
+                break;
 
-    /**
-     *
-     *
-     *
-     */
+            case VAR:
+                //VAR_DECL();
+                DECLARATION();
+                break;
 
+            case BANG, MINUS, TRUE, FALSE, NULL, NUMBER, STRING, IDENTIFIER, LEFT_PAREN, FOR, IF, PRINT, RETURN, WHILE, LEFT_BRACE:
+                STATEMENT();
+                DECLARATION();
+                break;
 
+            default:
+                break;
+        }
+    }
+
+    // FUN_DECL -> fun FUNCTION
+    public void FUN_DECL(){
+        if(this.preanalisis.tipo == TipoToken.FUN){
+            match(TipoToken.FUN);
+            //FUNCTION();
+        }else{
+            this.hayErrores = true;
+            System.out.println("Error en la lexema "+ this.preanalisis.lexema + ": Se esperaba un 'fun'");
+        }
+    }
+
+    // VAR_DECL -> var id VAR_INIT ;
+    public void VAR_DECL(){
+        if(preanalisis.tipo == TipoToken.VAR){
+            match(TipoToken.VAR);
+            match(TipoToken.IDENTIFIER);
+            Token name = previous();
+            if(preanalisis.tipo == TipoToken.EQUAL){
+                //VAR_INIT(null);
+            }
+            match(TipoToken.SEMICOLON);
+        }else{
+            hayErrores=true;
+            System.out.println("Error en la lexema "+ preanalisis.lexema + ": Se esperaba un 'var'");
+        }
+    }
+
+    /*VAR_INIT -> = EXPRESSION
+                -> E
+    */
+    public void VAR_INIT(){
+        if(preanalisis.tipo == TipoToken.EQUAL){
+            match(TipoToken.EQUAL);
+            //EXPRESSION();
+        }
+    }
 
     /*      SENTENCIAS      */
 
