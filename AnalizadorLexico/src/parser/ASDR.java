@@ -24,7 +24,7 @@ public class ASDR implements Parser{
 
     @Override
     public boolean parse(){
-        //PROGRAM();
+        PROGRAM();
 
         // Si no hay errores y se llego al final del archivo
         if(!this.hayErrores){
@@ -112,7 +112,7 @@ public class ASDR implements Parser{
     public void FUN_DECL(){
         if(this.preanalisis.tipo == TipoToken.FUN){
             match(TipoToken.FUN);
-            //FUNCTION();
+            FUNCTION();
         }else{
             this.hayErrores = true;
             System.out.println("Error en la lexema "+ this.preanalisis.lexema + ": Se esperaba un 'fun'");
@@ -161,24 +161,31 @@ public class ASDR implements Parser{
         switch (this.preanalisis.getTipo()){
             case BANG, MINUS, TRUE, FALSE, NULL, NUMBER, STRING, IDENTIFIER, LEFT_PAREN:
                 EXPR_STMT();
+                break;
 
             case FOR:
                 FOR_STMT();
+                break;
 
             case IF:
                  IF_STMT();
+                 break;
 
             case PRINT:
                 PRINT_STMT();
+                break;
 
             case RETURN:
                 RETURN_STMT();
+                break;
 
             case WHILE:
                 WHILE_STMT();
+                break;
 
             case LEFT_BRACE:
                 BLOCK();
+                break;
 
             default:
                 this.hayErrores = true;
@@ -188,7 +195,7 @@ public class ASDR implements Parser{
 
     // EXPR_STMT -> EXPRESSION ;
     public void EXPR_STMT(){
-        //EXPRESSION();
+        EXPRESSION();
         match(TipoToken.SEMICOLON);
     }
 
@@ -240,7 +247,7 @@ public class ASDR implements Parser{
     public void FOR_STMT_2(){
         switch (this.preanalisis.getTipo()){
             case BANG, MINUS, TRUE, FALSE, NULL, NUMBER, STRING, IDENTIFIER, LEFT_PAREN:
-                //EXPRESSION();
+                EXPRESSION();
                 match(TipoToken.SEMICOLON);
                 break;
 
@@ -269,7 +276,7 @@ public class ASDR implements Parser{
                 this.preanalisis.tipo == TipoToken.STRING ||
                 this.preanalisis.tipo == TipoToken.IDENTIFIER ||
                 this.preanalisis.tipo == TipoToken.LEFT_PAREN){
-            //EXPRESSION();
+            EXPRESSION();
         }
     }
 
@@ -278,7 +285,7 @@ public class ASDR implements Parser{
         if(this.preanalisis.tipo==TipoToken.IF){
             match(TipoToken.IF);
             match(TipoToken.LEFT_PAREN);
-            //EXPRESSION();
+            EXPRESSION();
             match(TipoToken.RIGHT_PAREN);
             STATEMENT();
             if(preanalisis.tipo == TipoToken.ELSE) {
@@ -304,7 +311,7 @@ public class ASDR implements Parser{
     public void PRINT_STMT(){
         if(this.preanalisis.tipo == TipoToken.PRINT){
             match(TipoToken.PRINT);
-            //EXPRESSION();
+            EXPRESSION();
             match(TipoToken.SEMICOLON);
         }else{
             this.hayErrores=true;
@@ -344,7 +351,7 @@ public class ASDR implements Parser{
                 this.preanalisis.tipo == TipoToken.STRING ||
                 this.preanalisis.tipo == TipoToken.IDENTIFIER ||
                 this.preanalisis.tipo == TipoToken.LEFT_PAREN){
-            //EXPRESSION();
+            EXPRESSION();
         }
     }
 
@@ -353,7 +360,7 @@ public class ASDR implements Parser{
         if(this.preanalisis.tipo == TipoToken.WHILE){
             match(TipoToken.WHILE);
             match(TipoToken.LEFT_PAREN);
-            // EXPRESSION();
+            EXPRESSION();
             match(TipoToken.RIGHT_PAREN);
             STATEMENT();
         }else{
@@ -529,6 +536,7 @@ public class ASDR implements Parser{
 
     // TERM -> FACTOR TERM_2
     public void TERM(){
+        FACTOR();
         if(preanalisis.tipo == TipoToken.MINUS || preanalisis.tipo == TipoToken.PLUS){
             TERM_2();
         }
@@ -631,7 +639,6 @@ public class ASDR implements Parser{
     public void CALL_2(){
         if(preanalisis.tipo == TipoToken.LEFT_PAREN){
             match(TipoToken.LEFT_PAREN);
-            //Argumentos que retorna Arguments_opc()
             match(TipoToken.RIGHT_PAREN);
             CALL_2();
         }
@@ -668,7 +675,6 @@ public class ASDR implements Parser{
                 match(TipoToken.STRING);
                 break;
 
-
             case IDENTIFIER:
                 match(TipoToken.IDENTIFIER);
                 break;
@@ -687,7 +693,7 @@ public class ASDR implements Parser{
     }
 
     /*      OTROS      */
-// FUNCTION -> id ( PARAMETERS_OPC ) BLOCK
+    // FUNCTION -> id ( PARAMETERS_OPC ) BLOCK
     public void FUNCTION(){
         switch (this.preanalisis.getTipo()){
             case IDENTIFIER:
