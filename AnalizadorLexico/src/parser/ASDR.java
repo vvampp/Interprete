@@ -1,7 +1,5 @@
 package parser;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import tokens.*;
 
@@ -61,6 +59,26 @@ public class ASDR implements Parser{
     /*      GRAMATICA      */
 
     // PROGRAM -> DECLARATION
+    public void PROGRAM(){
+        switch (this.preanalisis.getTipo()){
+            case FUN, VAR,
+                    BANG, MINUS,
+                    TRUE, FALSE,
+                    NULL, NUMBER,
+                    STRING, IDENTIFIER,
+                    LEFT_PAREN, FOR,
+                    IF, PRINT,
+                    RETURN, WHILE, LEFT_BRACE:
+                DECLARATION();
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    /*      DECLARACIONES      */
+
     /*
     DECLARATION   -> FUN_DECL DECLARATION
                     -> VAR_DECL DECLARATION
@@ -70,12 +88,12 @@ public class ASDR implements Parser{
     public void DECLARATION(){
         switch (this.preanalisis.getTipo()){
             case FUN:
-                //FUN_DECL();
+                FUN_DECL();
                 DECLARATION();
                 break;
 
             case VAR:
-                //VAR_DECL();
+                VAR_DECL();
                 DECLARATION();
                 break;
 
@@ -107,11 +125,11 @@ public class ASDR implements Parser{
             match(TipoToken.IDENTIFIER);
             Token name = previous();
             if(preanalisis.tipo == TipoToken.EQUAL){
-                //VAR_INIT(null);
+                VAR_INIT();
             }
             match(TipoToken.SEMICOLON);
         }else{
-            hayErrores=true;
+            this.hayErrores=true;
             System.out.println("Error en la lexema "+ preanalisis.lexema + ": Se esperaba un 'var'");
         }
     }
@@ -147,24 +165,23 @@ public class ASDR implements Parser{
                 FOR_STMT();
 
             case IF:
-                 //IF_STMT();
+                 IF_STMT();
 
             case PRINT:
-                //PRINT_STMT();
+                PRINT_STMT();
 
             case RETURN:
-                //RETURN_STMT();
+                RETURN_STMT();
 
             case WHILE:
-                //WHILE_STMT();
+                WHILE_STMT();
 
             case LEFT_BRACE:
-                //BLOCK();
+                BLOCK();
 
             default:
                 this.hayErrores = true;
                 System.out.println("Error en la lexema "+ this.preanalisis.getLexema());
-                return;
         }
     }
 
@@ -176,14 +193,14 @@ public class ASDR implements Parser{
 
     // FOR_STMT -> for ( FOR_STMT_1 FOR_STMT_2 FOR_STMT_3 ) STATEMENT
     public void FOR_STMT(){
-        if(preanalisis.getTipo() == TipoToken.FOR){
+        if(this.preanalisis.getTipo() == TipoToken.FOR){
             match(TipoToken.FOR);
             match(TipoToken.LEFT_PAREN);
-            //FOR_STMT_1();
-            //FOR_STMT_2();
-            //FOR_STMT_3();
+            FOR_STMT_1();
+            FOR_STMT_2();
+            FOR_STMT_3();
             match(TipoToken.RIGHT_PAREN);
-            //STATEMENT();
+            STATEMENT();
         }else{
             this.hayErrores = true;
             System.out.println("Error en el primer elemento del for de la lexema "+this.preanalisis.getLexema());
@@ -209,10 +226,9 @@ public class ASDR implements Parser{
                 break;
 
             default:
-                hayErrores = true;
+                this.hayErrores = true;
                 System.out.println("Error en el primer elemento del for de la lexema " + this.preanalisis.lexema);
                 break;
-                //return RETURN_STMT(); ? xd
         }
     }
 
@@ -230,7 +246,7 @@ public class ASDR implements Parser{
                 match(TipoToken.SEMICOLON);
 
             default:
-                hayErrores = true;
+                this.hayErrores = true;
                 System.out.println("Error en el segundo elemento del for de la lexema "+ this.preanalisis.lexema);
         }
     }
@@ -241,14 +257,22 @@ public class ASDR implements Parser{
                  -> E
      */
     public void FOR_STMT_3(){
-        if(preanalisis.tipo == TipoToken.BANG || preanalisis.tipo == TipoToken.MINUS || preanalisis.tipo == TipoToken.TRUE || preanalisis.tipo == TipoToken.FALSE || preanalisis.tipo == TipoToken.NULL || preanalisis.tipo == TipoToken.NUMBER || preanalisis.tipo == TipoToken.STRING || preanalisis.tipo == TipoToken.IDENTIFIER || preanalisis.tipo == TipoToken.LEFT_PAREN){
+        if(this.preanalisis.tipo == TipoToken.BANG ||
+                this.preanalisis.tipo == TipoToken.MINUS ||
+                this.preanalisis.tipo == TipoToken.TRUE ||
+                this.preanalisis.tipo == TipoToken.FALSE ||
+                this.preanalisis.tipo == TipoToken.NULL ||
+                this.preanalisis.tipo == TipoToken.NUMBER ||
+                this.preanalisis.tipo == TipoToken.STRING ||
+                this.preanalisis.tipo == TipoToken.IDENTIFIER ||
+                this.preanalisis.tipo == TipoToken.LEFT_PAREN){
             //EXPRESSION();
         }
     }
 
     // IF_STMT -> if (EXPRESSION) STATEMENT ELSE_STATEMENT
     public void IF_STMT(){
-        if(preanalisis.tipo==TipoToken.IF){
+        if(this.preanalisis.tipo==TipoToken.IF){
             match(TipoToken.IF);
             match(TipoToken.LEFT_PAREN);
             //EXPRESSION();
@@ -258,7 +282,7 @@ public class ASDR implements Parser{
                 ELSE_STATEMENT();
             }
         }else{
-            hayErrores=true;
+            this.hayErrores=true;
             System.out.println("Error en la lexema "+ preanalisis.lexema + ": Se esperaba un 'if'");
         }
     }
@@ -268,53 +292,69 @@ public class ASDR implements Parser{
                      -> E
      */
     public void ELSE_STATEMENT(){
-        if(preanalisis.tipo == TipoToken.ELSE){
+        if(this.preanalisis.tipo == TipoToken.ELSE){
             match(TipoToken.ELSE);
             STATEMENT();
         }
     }
 
     public void PRINT_STMT(){
-        if(preanalisis.tipo == TipoToken.PRINT){
+        if(this.preanalisis.tipo == TipoToken.PRINT){
             match(TipoToken.PRINT);
             //EXPRESSION();
             match(TipoToken.SEMICOLON);
         }else{
-            hayErrores=true;
-            System.out.println("Error en la lexema "+ preanalisis.lexema + ": Se esperaba un 'print'");
+            this.hayErrores=true;
+            System.out.println("Error en la lexema "+ this.preanalisis.lexema + ": Se esperaba un 'print'");
         }
     }
 
     // RETURN_STMT -> return RETURN_EXP_OPC ;
     public void RETURN_STMT(){
-        if(preanalisis.tipo == TipoToken.RETURN){
+        if(this.preanalisis.tipo == TipoToken.RETURN){
             match(TipoToken.RETURN);
-            if(preanalisis.tipo == TipoToken.BANG || preanalisis.tipo == TipoToken.MINUS || preanalisis.tipo == TipoToken.TRUE || preanalisis.tipo == TipoToken.FALSE || preanalisis.tipo == TipoToken.NULL || preanalisis.tipo == TipoToken.NUMBER || preanalisis.tipo == TipoToken.STRING || preanalisis.tipo == TipoToken.IDENTIFIER || preanalisis.tipo == TipoToken.LEFT_PAREN){
-                //RETURN_EXP_OPC();
+            if(this.preanalisis.tipo == TipoToken.BANG ||
+                    this.preanalisis.tipo == TipoToken.MINUS ||
+                    this.preanalisis.tipo == TipoToken.TRUE ||
+                    this.preanalisis.tipo == TipoToken.FALSE ||
+                    this.preanalisis.tipo == TipoToken.NULL ||
+                    this.preanalisis.tipo == TipoToken.NUMBER ||
+                    this.preanalisis.tipo == TipoToken.STRING ||
+                    this.preanalisis.tipo == TipoToken.IDENTIFIER ||
+                    this.preanalisis.tipo == TipoToken.LEFT_PAREN){
+                RETURN_EXP_OPC();
             }
             match(TipoToken.SEMICOLON);
         }else{
-            hayErrores=true;
+            this.hayErrores=true;
             System.out.println("Error en la lexema "+ preanalisis.lexema + ": Se esperaba un 'return'");
         }
     }
 
     public void RETURN_EXP_OPC(){
-        if(preanalisis.tipo == TipoToken.BANG || preanalisis.tipo == TipoToken.MINUS || preanalisis.tipo == TipoToken.TRUE || preanalisis.tipo == TipoToken.FALSE || preanalisis.tipo == TipoToken.NULL || preanalisis.tipo == TipoToken.NUMBER || preanalisis.tipo == TipoToken.STRING || preanalisis.tipo == TipoToken.IDENTIFIER || preanalisis.tipo == TipoToken.LEFT_PAREN){
+        if(this.preanalisis.tipo == TipoToken.BANG ||
+                this.preanalisis.tipo == TipoToken.MINUS ||
+                this.preanalisis.tipo == TipoToken.TRUE ||
+                this.preanalisis.tipo == TipoToken.FALSE ||
+                this.preanalisis.tipo == TipoToken.NULL ||
+                this.preanalisis.tipo == TipoToken.NUMBER ||
+                this.preanalisis.tipo == TipoToken.STRING ||
+                this.preanalisis.tipo == TipoToken.IDENTIFIER ||
+                this.preanalisis.tipo == TipoToken.LEFT_PAREN){
             //EXPRESSION();
         }
     }
 
     // WHILE_STMT -> while ( EXPRESSION ) STATEMENT
     public void WHILE_STMT(){
-        if(preanalisis.tipo == TipoToken.WHILE){
+        if(this.preanalisis.tipo == TipoToken.WHILE){
             match(TipoToken.WHILE);
             match(TipoToken.LEFT_PAREN);
             // EXPRESSION();
             match(TipoToken.RIGHT_PAREN);
             STATEMENT();
         }else{
-            hayErrores=true;
+            this.hayErrores = true;
             System.out.println("Error en la lexema "+ preanalisis.lexema + ": Se esperaba un 'while'");
         }
     }
@@ -330,6 +370,8 @@ public class ASDR implements Parser{
             System.out.println("Error en la lexema "+ this.preanalisis.lexema + ": Se esperaba un 'LEFT_BRACE'");
         }
     }
+
+    /*      EXPRESIONES      */
 
 
 }
