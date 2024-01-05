@@ -141,10 +141,10 @@ public class ASDR implements Parser{
     public void STATEMENT(){
         switch (this.preanalisis.getTipo()){
             case BANG, MINUS, TRUE, FALSE, NULL, NUMBER, STRING, IDENTIFIER, LEFT_PAREN:
-                //EXPR_STMT();
+                EXPR_STMT();
 
             case FOR:
-                //FOR_STMT();
+                FOR_STMT();
 
             case IF:
                  //IF_STMT();
@@ -187,6 +187,58 @@ public class ASDR implements Parser{
         }else{
             this.hayErrores = true;
             System.out.println("Error en el primer elemento del for de la lexema "+this.preanalisis.getLexema());
+        }
+    }
+
+    public void FOR_STMT_1() {
+        switch (this.preanalisis.getTipo()) {
+            case VAR:
+                VAR_DECL();
+                break;
+
+            case BANG, MINUS, TRUE, FALSE, NULL, NUMBER, STRING, IDENTIFIER, LEFT_PAREN:
+                EXPR_STMT();
+                break;
+
+            case SEMICOLON:
+                match(TipoToken.SEMICOLON);
+                break;
+
+            default:
+                hayErrores = true;
+                System.out.println("Error en el primer elemento del for de la lexema " + this.preanalisis.lexema);
+                break;
+                //return RETURN_STMT(); ? xd
+        }
+    }
+
+    /*
+    FOR_STMT_2 -> EXPRESSION;
+               -> ;
+    */
+    public void FOR_STMT_2(){
+        switch (this.preanalisis.getTipo()){
+            case BANG, MINUS, TRUE, FALSE, NULL, NUMBER, STRING, IDENTIFIER, LEFT_PAREN:
+                //EXPRESSION();
+                match(TipoToken.SEMICOLON);
+
+            case SEMICOLON:
+                match(TipoToken.SEMICOLON);
+
+            default:
+                hayErrores = true;
+                System.out.println("Error en el segundo elemento del for de la lexema "+ this.preanalisis.lexema);
+        }
+    }
+
+
+    /*
+    FOR_STMT_3 -> EXPRESSION
+                 -> E
+     */
+    public void FOR_STMT_3(){
+        if(preanalisis.tipo == TipoToken.BANG || preanalisis.tipo == TipoToken.MINUS || preanalisis.tipo == TipoToken.TRUE || preanalisis.tipo == TipoToken.FALSE || preanalisis.tipo == TipoToken.NULL || preanalisis.tipo == TipoToken.NUMBER || preanalisis.tipo == TipoToken.STRING || preanalisis.tipo == TipoToken.IDENTIFIER || preanalisis.tipo == TipoToken.LEFT_PAREN){
+            //EXPRESSION();
         }
     }
 
