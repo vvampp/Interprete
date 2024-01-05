@@ -190,6 +190,10 @@ public class ASDR implements Parser{
         }
     }
 
+    /*FOR_STMT_1 -> VAR_DECL
+             -> EXPR_STMT
+             -> ;
+    */
     public void FOR_STMT_1() {
         switch (this.preanalisis.getTipo()) {
             case VAR:
