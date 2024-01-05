@@ -19,11 +19,9 @@ public class Interprete {
             System.out.println("Uso correcto: interprete [archivo.txt]");
             System.exit(64);
         }
-
         else if(args.length == 1){
             ejecutarArchivo(args[0]);
         }
-
         else{
             ejecutarPrompt();
         }
