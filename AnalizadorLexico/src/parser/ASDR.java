@@ -1,7 +1,10 @@
 package parser;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import parser.clases.*;
 import tokens.*;
 
 public class ASDR implements Parser{
@@ -61,6 +64,9 @@ public class ASDR implements Parser{
 
     // PROGRAM -> DECLARATION
     public void PROGRAM(){
+        // Un programa en general esta compuesto por una lista de statements
+        List <Statement> statements = new ArrayList<>();
+
         switch (this.preanalisis.getTipo()){
             case FUN, VAR,
                     BANG, MINUS,
@@ -70,7 +76,7 @@ public class ASDR implements Parser{
                     LEFT_PAREN, FOR,
                     IF, PRINT,
                     RETURN, WHILE, LEFT_BRACE:
-                DECLARATION();
+                DECLARATION(statements);
                 break;
 
             default:
@@ -86,21 +92,24 @@ public class ASDR implements Parser{
                     -> STATEMENT DECLARATION
                     -> E
     */
-    public void DECLARATION(){
+    public void DECLARATION(List <Statement> statements){
         switch (this.preanalisis.getTipo()){
             case FUN:
                 FUN_DECL();
-                DECLARATION();
+
+                DECLARATION(statements);
                 break;
 
             case VAR:
                 VAR_DECL();
-                DECLARATION();
+
+                DECLARATION(statements);
                 break;
 
             case BANG, MINUS, TRUE, FALSE, NULL, NUMBER, STRING, IDENTIFIER, LEFT_PAREN, FOR, IF, PRINT, RETURN, WHILE, LEFT_BRACE:
                 STATEMENT();
-                DECLARATION();
+
+                DECLARATION(statements);
                 break;
 
             default:
@@ -157,61 +166,80 @@ public class ASDR implements Parser{
             -> BLOCK
     */
 
-    public void STATEMENT(){
+    public Statement STATEMENT(){
+        // Statement del que surgen todos los demas statements
         switch (this.preanalisis.getTipo()){
             case BANG, MINUS, TRUE, FALSE, NULL, NUMBER, STRING, IDENTIFIER, LEFT_PAREN:
-                EXPR_STMT();
-                break;
+                return EXPR_STMT();
 
             case FOR:
-                FOR_STMT();
-                break;
+                return FOR_STMT();
 
             case IF:
-                 IF_STMT();
-                 break;
+                 return IF_STMT();
 
             case PRINT:
-                PRINT_STMT();
-                break;
+                return PRINT_STMT();
 
             case RETURN:
-                RETURN_STMT();
-                break;
+                return RETURN_STMT();
 
             case WHILE:
-                WHILE_STMT();
-                break;
+                return WHILE_STMT();
 
             case LEFT_BRACE:
-                BLOCK();
-                break;
+                return BLOCK();
 
             default:
                 this.hayErrores = true;
                 System.out.println("Error en la lexema "+ this.preanalisis.getLexema());
+                return null;
         }
     }
 
     // EXPR_STMT -> EXPRESSION ;
-    public void EXPR_STMT(){
-        EXPRESSION();
+    public Statement EXPR_STMT(){
+        // Un Stmt expression esta compuesto por una Expression expression
+        // Expression expr = EXPRESSION();
         match(TipoToken.SEMICOLON);
+        return new StmtExpression(null /*AKI VA EXPR*/);
     }
 
     // FOR_STMT -> for ( FOR_STMT_1 FOR_STMT_2 FOR_STMT_3 ) STATEMENT
-    public void FOR_STMT(){
+    public Statement FOR_STMT(){
+        // Una sentencia for esta compuesta por una inicializacion, una condicion y un incremento
+        // Pero se debe crear un stmt loop el cual solo tiene condition y body
+        // La inicializacion esta fuera del for, la condition ya es un objeto, y el incremento esta dentro del body
+        // Por lo que se creara un objeto StmtBlock que contenga todo este conjunto
         if(this.preanalisis.getTipo() == TipoToken.FOR){
             match(TipoToken.FOR);
             match(TipoToken.LEFT_PAREN);
-            FOR_STMT_1();
-            FOR_STMT_2();
-            FOR_STMT_3();
+            Statement initializer = FOR_STMT_1(); // El primer elemento del for, es el inicializador, por lo que no se toma para crear el objeto StmtLoop
+            Expression condition = FOR_STMT_2(); // El segundo elementos del for, es la condicion, por lo que se toma para crear el objeto StmtLoop
+            Expression increase = FOR_STMT_3(); // El tercer elemento del for, es el incremento, por lo que no se toma para crear el objeto StmtLoop
             match(TipoToken.RIGHT_PAREN);
-            STATEMENT();
+
+            List <Statement> statements = new ArrayList<>(); // Lista de statements que conforman al for
+
+            statements.add(initializer); // Se agrega el inicializador a la lista de statements
+            Statement body = STATEMENT(); // Se recupera el statement body
+
+            // Si el incremento es null, el body ya no se tiene que modificar para agregar el incremento
+            if(increase == null){
+                statements.add(new StmtLoop(condition,body));
+            }
+            else {
+                // Si el incremento no es null, se tiene que modificar el body para agregar el incremento
+                // El body es el conjunto del incremento y el cuerpo del for, juntos en un objeto StmtBlock,
+                // Pero el StmtBlock solo esta conformado por un arreglo de statements, por lo que se crea un arreglo de statements
+                // y para evitar errores, se crea un objeto StmtExpression que contenga al incremento que es una Expression
+                statements.add(new StmtLoop(condition, new StmtBlock(Arrays.asList(body, new StmtExpression(increase)))));
+            }
+            return new StmtBlock(statements); // Se crea un objeto StmtBlock con este arreglo de declaraciones que conforman al for
         }else{
             this.hayErrores = true;
             System.out.println("Error en el primer elemento del for de la lexema "+this.preanalisis.getLexema());
+            return null;
         }
     }
 
@@ -219,24 +247,24 @@ public class ASDR implements Parser{
              -> EXPR_STMT
              -> ;
     */
-    public void FOR_STMT_1() {
+    public Statement FOR_STMT_1() {
+        // Primer elemento del for, la inicializacion, la cual puede ser una declaracion o una expresion
         switch (this.preanalisis.getTipo()) {
             case VAR:
-                VAR_DECL();
-                break;
+                //return VAR_DECL();
 
             case BANG, MINUS, TRUE, FALSE, NULL, NUMBER, STRING, IDENTIFIER, LEFT_PAREN:
-                EXPR_STMT();
-                break;
+                return EXPR_STMT();
 
             case SEMICOLON:
+                // Si se va por este caso, quiere decir que la inicializacion fue cadena vacia
                 match(TipoToken.SEMICOLON);
-                break;
+                return new StmtExpression(new ExprLiteral(true)); // No se puede devolver unicamente una expression, por lo que se crea una sentencia que la contenga
 
             default:
                 this.hayErrores = true;
-                System.out.println("Error en el primer elemento del for de la lexema " + this.preanalisis.lexema);
-                break;
+                System.out.println("Error en el primer elemento del for de la lexema " + this.preanalisis.getLexema());
+                return null;
         }
     }
 
@@ -244,21 +272,26 @@ public class ASDR implements Parser{
     FOR_STMT_2 -> EXPRESSION;
                -> ;
     */
-    public void FOR_STMT_2(){
+    public Expression FOR_STMT_2(){
+        // Segundo elemento del for, la condicion, la cual es una expresion
         switch (this.preanalisis.getTipo()){
-            case BANG, MINUS, TRUE, FALSE, NULL, NUMBER, STRING, IDENTIFIER, LEFT_PAREN:
-                EXPRESSION();
+            case BANG, MINUS, TRUE, FALSE, NULL, NUMBER,
+                    STRING, IDENTIFIER, LEFT_PAREN:
+                //Expression expr = EXPRESSION();
                 match(TipoToken.SEMICOLON);
-                break;
+                return new ExprGrouping(null /*Aki va expr*/); //
 
             case SEMICOLON:
+                // Si se va por este caso, quiere decir que la condicion fue cadena vacia
                 match(TipoToken.SEMICOLON);
-                break;
+                return new ExprLiteral(true); // Expresion que mejor se identifica con este caso
 
             default:
                 this.hayErrores = true;
-                System.out.println("Error en el segundo elemento del for de la lexema "+ this.preanalisis.lexema);
+                System.out.println("Error en el segundo elemento del for de la lexema "+ this.preanalisis.getLexema());
+                return null;
         }
+
     }
 
 
@@ -266,7 +299,8 @@ public class ASDR implements Parser{
     FOR_STMT_3 -> EXPRESSION
                  -> E
      */
-    public void FOR_STMT_3(){
+    public Expression FOR_STMT_3(){
+        // Tercer elemento del for, el incremento, el cual es una expresion
         if(this.preanalisis.tipo == TipoToken.BANG ||
                 this.preanalisis.tipo == TipoToken.MINUS ||
                 this.preanalisis.tipo == TipoToken.TRUE ||
@@ -276,24 +310,36 @@ public class ASDR implements Parser{
                 this.preanalisis.tipo == TipoToken.STRING ||
                 this.preanalisis.tipo == TipoToken.IDENTIFIER ||
                 this.preanalisis.tipo == TipoToken.LEFT_PAREN){
-            EXPRESSION();
+            return null; // PROVISIONAL, BUENO DE ABAJO
+            //return EXPRESSION();
         }
+        return null;
     }
 
     // IF_STMT -> if (EXPRESSION) STATEMENT ELSE_STATEMENT
-    public void IF_STMT(){
-        if(this.preanalisis.tipo==TipoToken.IF){
+    public Statement IF_STMT(){
+        // Una sentencia if esta compuesta por una expresion condition,
+        // un statement thenBranch
+        // y un statement elseBranch
+        Statement elseBranch = null; // Rama del if
+        if(this.preanalisis.getTipo() == TipoToken.IF){
             match(TipoToken.IF);
             match(TipoToken.LEFT_PAREN);
-            EXPRESSION();
+            //Expression condition = EXPRESSION(); // Se recupera la expresion condition
             match(TipoToken.RIGHT_PAREN);
-            STATEMENT();
-            if(preanalisis.tipo == TipoToken.ELSE) {
-                ELSE_STATEMENT();
+            Statement thenBranch = STATEMENT();  // Se recupera el statement thenBranch
+            // Si el preanalisis es un else, se recupera el statement elseBranch
+            if(preanalisis.getTipo() == TipoToken.ELSE) {
+                // Se recupera la sentencia que se prosigue al thenBranch en el if
+                // si la derivacion es nula, se regresa un null
+                // en otro caso se regresa la sentencia
+                elseBranch = ELSE_STATEMENT(null);
             }
+            return new StmtIf(null/*AKI va condition*/, thenBranch, elseBranch);
         }else{
             this.hayErrores=true;
-            System.out.println("Error en la lexema "+ preanalisis.lexema + ": Se esperaba un 'if'");
+            System.out.println("Error en la lexema "+ preanalisis.getLexema() + ": Se esperaba un 'if'");
+            return null;
         }
     }
 
@@ -301,26 +347,34 @@ public class ASDR implements Parser{
     ELSE_STATEMENT -> else STATEMENT
                      -> E
      */
-    public void ELSE_STATEMENT(){
+    public Statement ELSE_STATEMENT(Statement elseBranch){
+        // Rama del if donde se encuentra el else y un statement elseBranch
         if(this.preanalisis.tipo == TipoToken.ELSE){
             match(TipoToken.ELSE);
-            STATEMENT();
+            elseBranch = STATEMENT();
+            return elseBranch;
         }
+        return elseBranch;
     }
 
-    public void PRINT_STMT(){
+    public Statement PRINT_STMT(){
+        // Un Stmt print esta compuesto por una Expression expression
         if(this.preanalisis.tipo == TipoToken.PRINT){
             match(TipoToken.PRINT);
-            EXPRESSION();
+            //Expression expr = EXPRESSION();
             match(TipoToken.SEMICOLON);
+            return new StmtPrint(null /*AKI VA expr*/);
         }else{
             this.hayErrores=true;
-            System.out.println("Error en la lexema "+ this.preanalisis.lexema + ": Se esperaba un 'print'");
+            System.out.println("Error en la lexema "+ this.preanalisis.getLexema() + ": Se esperaba un 'print'");
+            return null;
         }
     }
 
     // RETURN_STMT -> return RETURN_EXP_OPC ;
-    public void RETURN_STMT(){
+    public Statement RETURN_STMT(){
+        // El Stmt return esta compuesto de una Expresion value
+        Expression value = null; // null por default
         if(this.preanalisis.tipo == TipoToken.RETURN){
             match(TipoToken.RETURN);
             if(this.preanalisis.tipo == TipoToken.BANG ||
@@ -332,16 +386,22 @@ public class ASDR implements Parser{
                     this.preanalisis.tipo == TipoToken.STRING ||
                     this.preanalisis.tipo == TipoToken.IDENTIFIER ||
                     this.preanalisis.tipo == TipoToken.LEFT_PAREN){
-                RETURN_EXP_OPC();
+                // Se recupera la expresion que se regresara en el return
+                // si la derivacion es nula, se regresa un null
+                // en otro caso se regresa la expresion
+                value = RETURN_EXP_OPC(null);
             }
             match(TipoToken.SEMICOLON);
+            return new StmtReturn(value);
         }else{
             this.hayErrores=true;
-            System.out.println("Error en la lexema "+ preanalisis.lexema + ": Se esperaba un 'return'");
+            System.out.println("Error en la lexema "+ preanalisis.getLexema() + ": Se esperaba un 'return'");
+            return null;
         }
     }
 
-    public void RETURN_EXP_OPC(){
+    public Expression RETURN_EXP_OPC(Expression value){
+        // Expresion que se regresara en el return
         if(this.preanalisis.tipo == TipoToken.BANG ||
                 this.preanalisis.tipo == TipoToken.MINUS ||
                 this.preanalisis.tipo == TipoToken.TRUE ||
@@ -351,33 +411,44 @@ public class ASDR implements Parser{
                 this.preanalisis.tipo == TipoToken.STRING ||
                 this.preanalisis.tipo == TipoToken.IDENTIFIER ||
                 this.preanalisis.tipo == TipoToken.LEFT_PAREN){
-            EXPRESSION();
+            //value = EXPRESSION();
+            return value;
         }
+        return value;
     }
 
     // WHILE_STMT -> while ( EXPRESSION ) STATEMENT
-    public void WHILE_STMT(){
-        if(this.preanalisis.tipo == TipoToken.WHILE){
+    public Statement WHILE_STMT(){
+        // Una sentencia while esta compuesta por una expresion condition y un statement body
+        if(this.preanalisis.getTipo() == TipoToken.WHILE){
             match(TipoToken.WHILE);
             match(TipoToken.LEFT_PAREN);
-            EXPRESSION();
+            // Expression conditionn = EXPRESSION(); // Se recupera la expresion condition
             match(TipoToken.RIGHT_PAREN);
-            STATEMENT();
+            Statement body = STATEMENT(); // Se recupera el statement body
+            return new StmtLoop(null /*AKI VA CONDITION*/, body); // Se regresa un statement loop
         }else{
             this.hayErrores = true;
             System.out.println("Error en la lexema "+ preanalisis.lexema + ": Se esperaba un 'while'");
+            return null;
         }
     }
 
     // BLOCK -> { DECLARATION }
-    public void BLOCK(){
-        if(this.preanalisis.tipo == TipoToken.LEFT_BRACE){
+    public Statement BLOCK(){
+        // Bloque de de statements, por lo que se tienen que recuperar
+        // todas las declaraciones que se encuentren dentro de este bloque
+        List < Statement > statementsList = new ArrayList<>();
+
+        if(this.preanalisis.getTipo() == TipoToken.LEFT_BRACE){
             match(TipoToken.LEFT_BRACE);
-            DECLARATION();
+            DECLARATION(statementsList); // Se recuperan todas las declaraciones que se encuentren dentro del bloque, para que se pueda seguir la rama del arbol
             match(TipoToken.RIGHT_BRACE);
+            return new StmtBlock(statementsList); // Se regresa un bloque de statements
         }else{
             this.hayErrores = true;
-            System.out.println("Error en la lexema "+ this.preanalisis.lexema + ": Se esperaba un 'LEFT_BRACE'");
+            System.out.println("Error en la lexema "+ this.preanalisis.getLexema() + ": Se esperaba un 'LEFT_BRACE'");
+            return null;
         }
     }
 
