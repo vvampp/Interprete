@@ -827,18 +827,13 @@ public class ASDR implements Parser{
     ARGUMENTS_OPC -> EXPRESSION ARGUMENTS
                     -> E
     */
-    public void ARGUMENTS_OPC(){
-        if(preanalisis.tipo == TipoToken.BANG ||
-                preanalisis.tipo == TipoToken.MINUS ||
-                preanalisis.tipo == TipoToken.TRUE ||
-                preanalisis.tipo == TipoToken.FALSE ||
-                preanalisis.tipo == TipoToken.NULL ||
-                preanalisis.tipo == TipoToken.NUMBER ||
-                preanalisis.tipo == TipoToken.STRING ||
-                preanalisis.tipo == TipoToken.IDENTIFIER ||
-                preanalisis.tipo == TipoToken.LEFT_PAREN){
-            ARGUMENTS();
+    public List<Expression> ARGUMENTS_OPC(){
+        List <Expression> arguments = new ArrayList<>();
+        if(preanalisis.tipo == TipoToken.BANG || preanalisis.tipo == TipoToken.MINUS || preanalisis.tipo == TipoToken.TRUE || preanalisis.tipo == TipoToken.FALSE || preanalisis.tipo == TipoToken.NULL || preanalisis.tipo == TipoToken.NUMBER || preanalisis.tipo == TipoToken.STRING || preanalisis.tipo == TipoToken.IDENTIFIER || preanalisis.tipo == TipoToken.LEFT_PAREN){
+            arguments.add(EXPRESSION());
+            ARGUMENTS(arguments);
         }
+        return arguments;
     }
 
     /*
