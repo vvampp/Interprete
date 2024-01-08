@@ -840,9 +840,10 @@ public class ASDR implements Parser{
     ARGUMENTS -> , EXPRESSION ARGUMENTS
                 -> E
     */
-    public void ARGUMENTS(){
+    public void ARGUMENTS(List <Expression> arguments){
         while(preanalisis.tipo == TipoToken.COMMA){
             match(TipoToken.COMMA);
+            arguments.add(EXPRESSION());
         }
     }
 }
