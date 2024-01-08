@@ -529,11 +529,12 @@ public class ASDR implements Parser{
     }
 
     // EQUALITY -> COMPARISON EQUALITY_2
-    public void EQUALITY(){
-        COMPARISON();
+    public Expression EQUALITY(){
+        Expression expr = COMPARISON();
         if(preanalisis.tipo == TipoToken.BANG_EQUAL || preanalisis.tipo == TipoToken.EQUAL_EQUAL){
-            EQUALITY_2();
+            expr = EQUALITY_2(expr);
         }
+        return expr;
     }
 
     /*
@@ -541,32 +542,40 @@ public class ASDR implements Parser{
                  -> == COMPARISON EQUALITY_2
                  -> E
      */
-    public void EQUALITY_2(){
+    public Expression EQUALITY_2(Expression expr){
+        Token operador;
+        Expression _expr;
+        ExprBinary expb;
+
         switch (this.preanalisis.getTipo()){
             case BANG_EQUAL:
                 match(TipoToken.BANG_EQUAL);
-                COMPARISON();
-                EQUALITY_2();
-                break;
+                operador = previous();
+                _expr = COMPARISON();
+                expb = new ExprBinary(expr, operador, _expr);
+                return EQUALITY_2(expb);
 
             case EQUAL_EQUAL:
                 match(TipoToken.EQUAL_EQUAL);
-                COMPARISON();
-                EQUALITY_2();
-                break;
-            default:
-                this.hayErrores=true;
-                break;
-        }
+                operador = previous();
+                _expr = COMPARISON();
+                expb = new ExprBinary(expr, operador, _expr);
+                return EQUALITY_2(expb);
 
+            default:
+                break;
+
+        }
+        return expr;
     }
 
     // COMPARISON -> TERM COMPARISON_2
-    public void COMPARISON(){
-        TERM();
+    public Expression COMPARISON(){
+        Expression expr = TERM();
         if(preanalisis.tipo == TipoToken.GREATER ||preanalisis.tipo == TipoToken.GREATER_EQUAL || preanalisis.tipo == TipoToken.LESS || preanalisis.tipo == TipoToken.LESS_EQUAL){
-            COMPARISON_2();
+            expr =  COMPARISON_2(expr);
         }
+        return expr;
     }
 
     /*
@@ -576,40 +585,53 @@ public class ASDR implements Parser{
                     -> <= TERM COMPARISON_2
                     -> E
     */
-    public void COMPARISON_2(){
+    public Expression COMPARISON_2(Expression expr){
+        Token operador;
+        Expression _expr;
+        ExprBinary expb;
+
         switch (this.preanalisis.getTipo()){
             case GREATER:
                 match(TipoToken.GREATER);
-                TERM();
-                COMPARISON_2();
-                break;
+                operador = previous();
+                _expr= TERM();
+                expb= new ExprBinary(expr, operador, _expr);
+                return COMPARISON_2(expb);
 
             case GREATER_EQUAL:
                 match(TipoToken.GREATER_EQUAL);
-                TERM();
-                COMPARISON_2();
-                break;
+                operador = previous();
+                _expr= TERM();
+                expb= new ExprBinary(expr, operador, _expr);
+                return COMPARISON_2(expb);
 
             case LESS:
                 match(TipoToken.LESS);
-                break;
+                operador = previous();
+                _expr= TERM();
+                expb= new ExprBinary(expr, operador, _expr);
+                return COMPARISON_2(expb);
 
             case LESS_EQUAL:
                 match(TipoToken.LESS_EQUAL);
-                break;
+                operador = previous();
+                _expr= TERM();
+                expb= new ExprBinary(expr, operador, _expr);
+                return COMPARISON_2(expb);
 
             default:
-                this.hayErrores=true;
                 break;
         }
+        return expr;
     }
 
     // TERM -> FACTOR TERM_2
-    public void TERM(){
-        FACTOR();
+    public Expression TERM(){
+        Expression expr = FACTOR();
         if(preanalisis.tipo == TipoToken.MINUS || preanalisis.tipo == TipoToken.PLUS){
-            TERM_2();
+            expr = TERM_2(expr);
         }
+        return expr;
     }
 
     /*
@@ -617,24 +639,29 @@ public class ASDR implements Parser{
             -> + FACTOR TERM_2
             -> E
     */
-    public void TERM_2(){
+    public Expression TERM_2(Expression expr){
+        Token operador;
+        Expression _expr;
+        ExprBinary expb;
         switch (this.preanalisis.getTipo()){
             case MINUS:
                 match(TipoToken.MINUS);
-                FACTOR();
-                TERM_2();
-                break;
+                operador = previous();
+                _expr=FACTOR();
+                expb = new ExprBinary(expr, operador, _expr);
+                return TERM_2(expb);
 
             case PLUS:
                 match(TipoToken.PLUS);
-                FACTOR();
-                TERM_2();
-
-                break;
+                operador = previous();
+                _expr = FACTOR();
+                expb = new ExprBinary(expr, operador, _expr);
+                return TERM_2(expb);
 
             default:
                 break;
         }
+        return expr;
     }
 
     // FACTOR -> UNARY FACTOR_2
