@@ -811,12 +811,14 @@ public class ASDR implements Parser{
     PARAMETERS_2 -> , id PARAMETERS_2
                 -> E
     */
-    public void PARAMETERS_2(){
+    public void PARAMETERS_2(List <Token> parameterList){
         // Es una funcion recursiva, pero modificada a su forma iterativa
         while(this.preanalisis.tipo == TipoToken.COMMA){
             match(TipoToken.COMMA);
             if(this.preanalisis.tipo == TipoToken.IDENTIFIER){
+                Token additionalParamToken = this.preanalisis; // Unicamente se guarda el token de identificador, no se guardan los tokens de coma
                 match(TipoToken.IDENTIFIER);
+                parameterList.add(additionalParamToken);
             }
         }
     }
