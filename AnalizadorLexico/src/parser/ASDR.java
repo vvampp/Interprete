@@ -26,12 +26,13 @@ public class ASDR implements Parser{
 
     @Override
     public boolean parse(){
-        PROGRAM();
+        List <Statement> arbol = PROGRAM();
 
         // Si no hay errores y se llego al final del archivo
         if(!this.hayErrores){
-            if (this.preanalisis.getTipo() == TipoToken.EOF) {
+            if (this.preanalisis.tipo == TipoToken.EOF) {
                 System.out.println("Sin errores");
+                System.out.println(arbol);
                 return true;
             } else {
                 System.out.println("Se encontraron errores");
@@ -62,9 +63,8 @@ public class ASDR implements Parser{
     /*      GRAMATICA      */
 
     // PROGRAM -> DECLARATION
-    public void PROGRAM(){
-        // Un programa en general esta compuesto por una lista de statements
-        List <Statement> statements = new ArrayList<>();
+    public List<Statement> PROGRAM(){
+        List<Statement> statements = new ArrayList<>(); //Lista de declaraciones
 
         switch (this.preanalisis.getTipo()){
             case FUN, VAR,
@@ -81,6 +81,7 @@ public class ASDR implements Parser{
             default:
                 break;
         }
+        return statements;
     }
 
     /*      DECLARACIONES      */
@@ -94,20 +95,20 @@ public class ASDR implements Parser{
     public void DECLARATION(List <Statement> statements){
         switch (this.preanalisis.getTipo()){
             case FUN:
-                FUN_DECL();
-
+                Statement funDecl = FUN_DECL();
+                statements.add(funDecl); //Se agrega la declaracion a la lista de declaraciones
                 DECLARATION(statements);
                 break;
 
             case VAR:
-                VAR_DECL();
-
+                Statement varDecl = VAR_DECL();
+                statements.add(varDecl); //Se agrega la declaracion a la lista de declaraciones
                 DECLARATION(statements);
                 break;
 
             case BANG, MINUS, TRUE, FALSE, NULL, NUMBER, STRING, IDENTIFIER, LEFT_PAREN, FOR, IF, PRINT, RETURN, WHILE, LEFT_BRACE:
-                STATEMENT();
-
+                Statement stmt = STATEMENT();
+                statements.add(stmt); //Se agrega la declaracion a la lista de declaraciones
                 DECLARATION(statements);
                 break;
 
@@ -117,40 +118,45 @@ public class ASDR implements Parser{
     }
 
     // FUN_DECL -> fun FUNCTION
-    public void FUN_DECL(){
+    public Statement FUN_DECL(){
         if(this.preanalisis.tipo == TipoToken.FUN){
             match(TipoToken.FUN);
-            FUNCTION();
+            return FUNCTION();
         }else{
             this.hayErrores = true;
             System.out.println("Error en la lexema "+ this.preanalisis.lexema + ": Se esperaba un 'fun'");
+            return null;
         }
     }
 
     // VAR_DECL -> var id VAR_INIT ;
-    public void VAR_DECL(){
+    public Statement VAR_DECL(){
+        Expression initialziaer = null;
         if(preanalisis.tipo == TipoToken.VAR){
             match(TipoToken.VAR);
             match(TipoToken.IDENTIFIER);
             Token name = previous();
             if(preanalisis.tipo == TipoToken.EQUAL){
-                VAR_INIT();
+                initialziaer = VAR_INIT(null);
             }
             match(TipoToken.SEMICOLON);
+            return new StmtVar(name, initialziaer);
         }else{
-            this.hayErrores=true;
+            hayErrores=true;
             System.out.println("Error en la lexema "+ preanalisis.lexema + ": Se esperaba un 'var'");
+            return null;
         }
     }
 
     /*VAR_INIT -> = EXPRESSION
                 -> E
     */
-    public void VAR_INIT(){
+    public Expression VAR_INIT(Expression initializer){
         if(preanalisis.tipo == TipoToken.EQUAL){
             match(TipoToken.EQUAL);
-            //EXPRESSION();
+            initializer = EXPRESSION();
         }
+        return initializer;
     }
 
     /*      SENTENCIAS      */
@@ -199,9 +205,9 @@ public class ASDR implements Parser{
     // EXPR_STMT -> EXPRESSION ;
     public Statement EXPR_STMT(){
         // Un Stmt expression esta compuesto por una Expression expression
-        // Expression expr = EXPRESSION();
+        Expression expr = EXPRESSION();
         match(TipoToken.SEMICOLON);
-        return new StmtExpression(null /*AKI VA EXPR*/);
+        return new StmtExpression(expr);
     }
 
     // FOR_STMT -> for ( FOR_STMT_1 FOR_STMT_2 FOR_STMT_3 ) STATEMENT
@@ -250,7 +256,7 @@ public class ASDR implements Parser{
         // Primer elemento del for, la inicializacion, la cual puede ser una declaracion o una expresion
         switch (this.preanalisis.getTipo()) {
             case VAR:
-                //return VAR_DECL();
+                return VAR_DECL();
 
             case BANG, MINUS, TRUE, FALSE, NULL, NUMBER, STRING, IDENTIFIER, LEFT_PAREN:
                 return EXPR_STMT();
@@ -276,9 +282,9 @@ public class ASDR implements Parser{
         switch (this.preanalisis.getTipo()){
             case BANG, MINUS, TRUE, FALSE, NULL, NUMBER,
                     STRING, IDENTIFIER, LEFT_PAREN:
-                //Expression expr = EXPRESSION();
+                Expression expr = EXPRESSION();
                 match(TipoToken.SEMICOLON);
-                return new ExprGrouping(null /*Aki va expr*/); //
+                return new ExprGrouping(expr); //
 
             case SEMICOLON:
                 // Si se va por este caso, quiere decir que la condicion fue cadena vacia
@@ -299,18 +305,8 @@ public class ASDR implements Parser{
                  -> E
      */
     public Expression FOR_STMT_3(){
-        // Tercer elemento del for, el incremento, el cual es una expresion
-        if(this.preanalisis.tipo == TipoToken.BANG ||
-                this.preanalisis.tipo == TipoToken.MINUS ||
-                this.preanalisis.tipo == TipoToken.TRUE ||
-                this.preanalisis.tipo == TipoToken.FALSE ||
-                this.preanalisis.tipo == TipoToken.NULL ||
-                this.preanalisis.tipo == TipoToken.NUMBER ||
-                this.preanalisis.tipo == TipoToken.STRING ||
-                this.preanalisis.tipo == TipoToken.IDENTIFIER ||
-                this.preanalisis.tipo == TipoToken.LEFT_PAREN){
-            return null; // PROVISIONAL, BUENO DE ABAJO
-            //return EXPRESSION();
+        if(preanalisis.tipo == TipoToken.BANG || preanalisis.tipo == TipoToken.MINUS || preanalisis.tipo == TipoToken.TRUE || preanalisis.tipo == TipoToken.FALSE || preanalisis.tipo == TipoToken.NULL || preanalisis.tipo == TipoToken.NUMBER || preanalisis.tipo == TipoToken.STRING || preanalisis.tipo == TipoToken.IDENTIFIER || preanalisis.tipo == TipoToken.LEFT_PAREN){
+            return EXPRESSION();
         }
         return null;
     }
@@ -324,7 +320,7 @@ public class ASDR implements Parser{
         if(this.preanalisis.getTipo() == TipoToken.IF){
             match(TipoToken.IF);
             match(TipoToken.LEFT_PAREN);
-            //Expression condition = EXPRESSION(); // Se recupera la expresion condition
+            Expression condition = EXPRESSION(); // Se recupera la expresion condition
             match(TipoToken.RIGHT_PAREN);
             Statement thenBranch = STATEMENT();  // Se recupera el statement thenBranch
             // Si el preanalisis es un else, se recupera el statement elseBranch
@@ -334,7 +330,7 @@ public class ASDR implements Parser{
                 // en otro caso se regresa la sentencia
                 elseBranch = ELSE_STATEMENT(null);
             }
-            return new StmtIf(null/*AKI va condition*/, thenBranch, elseBranch);
+            return new StmtIf(condition, thenBranch, elseBranch);
         }else{
             this.hayErrores=true;
             System.out.println("Error en la lexema "+ preanalisis.getLexema() + ": Se esperaba un 'if'");
@@ -360,9 +356,9 @@ public class ASDR implements Parser{
         // Un Stmt print esta compuesto por una Expression expression
         if(this.preanalisis.tipo == TipoToken.PRINT){
             match(TipoToken.PRINT);
-            //Expression expr = EXPRESSION();
+            Expression expr = EXPRESSION();
             match(TipoToken.SEMICOLON);
-            return new StmtPrint(null /*AKI VA expr*/);
+            return new StmtPrint(expr);
         }else{
             this.hayErrores=true;
             System.out.println("Error en la lexema "+ this.preanalisis.getLexema() + ": Se esperaba un 'print'");
@@ -410,7 +406,7 @@ public class ASDR implements Parser{
                 this.preanalisis.tipo == TipoToken.STRING ||
                 this.preanalisis.tipo == TipoToken.IDENTIFIER ||
                 this.preanalisis.tipo == TipoToken.LEFT_PAREN){
-            //value = EXPRESSION();
+            value = EXPRESSION();
             return value;
         }
         return value;
@@ -422,10 +418,10 @@ public class ASDR implements Parser{
         if(this.preanalisis.getTipo() == TipoToken.WHILE){
             match(TipoToken.WHILE);
             match(TipoToken.LEFT_PAREN);
-            // Expression conditionn = EXPRESSION(); // Se recupera la expresion condition
+            Expression condition = EXPRESSION(); // Se recupera la expresion condition
             match(TipoToken.RIGHT_PAREN);
             Statement body = STATEMENT(); // Se recupera el statement body
-            return new StmtLoop(null /*AKI VA CONDITION*/, body); // Se regresa un statement loop
+            return new StmtLoop(condition, body); // Se regresa un statement loop
         }else{
             this.hayErrores = true;
             System.out.println("Error en la lexema "+ preanalisis.lexema + ": Se esperaba un 'while'");
@@ -462,70 +458,87 @@ public class ASDR implements Parser{
     }
 
     // ASSIGNMENT -> LOGIC_OR ASSIGNMENT_OPC
-    public void ASSIGNMENT(){
-        LOGIC_OR();
+    public Expression ASSIGNMENT(){
+        Expression expr = LOGIC_OR();
         if(preanalisis.tipo == TipoToken.EQUAL){
-            ASSIGNMENT_OPC();
+            expr = ASSIGNMENT_OPC(expr);
         }
+        return expr;
     }
 
     /*ASSIGNMENT_OPC -> = EXPRESSION
                      -> E */
-    public void ASSIGNMENT_OPC(){
+    public Expression ASSIGNMENT_OPC(Expression value){
         if(preanalisis.tipo == TipoToken.EQUAL){
             match(TipoToken.EQUAL);
-            EXPRESSION();
+            Token name = previous();
+            value = EXPRESSION();
+            return new ExprAssign(name, value);
         }
+        return value;
     }
 
     // LOGIC_OR -> LOGIC_AND LOGIC_OR_2
-    public void LOGIC_OR(){
-        LOGIC_AND();
+    public Expression LOGIC_OR(){
+        Expression expr = LOGIC_AND();
         if(preanalisis.tipo == TipoToken.OR){
-            LOGIC_OR_2();
+            expr = LOGIC_OR_2(expr);
         }
+        return expr;
     }
 
     /*
     LOGIC_OR_2 -> or LOGIC_AND LOGIC_OR_2
                  -> E
      */
-    public void LOGIC_OR_2(){
+    public Expression LOGIC_OR_2(Expression expr){
         if(preanalisis.tipo == TipoToken.OR){
             match(TipoToken.OR);
-            LOGIC_AND();
-            LOGIC_OR_2();
+            Token operador = previous();
+            Expression _expr = LOGIC_AND();
+            Expression expb = new ExprLogical(expr, operador, _expr);
+            return LOGIC_OR_2(expb);
         }
+        return expr;
     }
 
     // LOGIC_AND -> EQUALITY LOGIC_AND_2
-    public void LOGIC_AND(){
-        EQUALITY();
+    public Expression LOGIC_AND(){
+        Expression expr = EQUALITY();
         if(preanalisis.tipo == TipoToken.AND){
-            LOGIC_AND_2();
+            expr =  LOGIC_AND_2(expr);
         }
+        return expr;
     }
 
     /*
     LOGIC_AND_2 -> and EQUALITY LOGIC_AND_2
                    -> E
     */
-    public void LOGIC_AND_2(){
+    public Expression LOGIC_AND_2(Expression expr){
+        Token operador;
+        Expression _expr;
+        ExprBinary expb;
+
         switch (this.preanalisis.getTipo()){
             case BANG_EQUAL:
                 match(TipoToken.BANG_EQUAL);
-                COMPARISON();
-                LOGIC_AND_2();
-                break;
+                operador = previous();
+                _expr = COMPARISON();
+                expb = new ExprBinary(expr, operador, _expr);
+                return EQUALITY_2(expb);
+
             case EQUAL_EQUAL:
                 match(TipoToken.EQUAL_EQUAL);
-                COMPARISON();
-                LOGIC_AND_2();
-                break;
+                operador = previous();
+                _expr = COMPARISON();
+                expb = new ExprBinary(expr, operador, _expr);
+                return EQUALITY_2(expb);
+
             default:
-                this.hayErrores=true;
                 break;
         }
+        return expr;
     }
 
     // EQUALITY -> COMPARISON EQUALITY_2
@@ -770,42 +783,45 @@ public class ASDR implements Parser{
             -> id
             -> ( EXPRESSION )
     */
-    public void PRIMARY() {
+    public Expression PRIMARY() {
         switch (this.preanalisis.getTipo()) {
             case TRUE:
                 match(TipoToken.TRUE);
-                break;
+                return new ExprLiteral(true);
 
             case FALSE:
                 match(TipoToken.FALSE);
-                break;
+                return new ExprLiteral(false);
 
             case NULL:
                 match(TipoToken.NULL);
-                break;
+                return new ExprLiteral(null);
 
             case NUMBER:
                 match(TipoToken.NUMBER);
-                break;
+                Token numero = previous();
+                return new ExprLiteral(numero.getLiteral());
 
             case STRING:
                 match(TipoToken.STRING);
-                break;
+                Token cadena = previous();
+                return new ExprLiteral(cadena.getLiteral());
 
             case IDENTIFIER:
                 match(TipoToken.IDENTIFIER);
-                break;
+                Token id = previous();
+                return new ExprVariable(id);
 
             case LEFT_PAREN:
                 match(TipoToken.LEFT_PAREN);
-                EXPRESSION();
+                Expression expr = EXPRESSION();
                 match(TipoToken.RIGHT_PAREN);
-                break;
+                return new ExprGrouping(expr);
 
             default:
                 this.hayErrores = true;
                 System.out.println("Error detectado en la lexema " + this.preanalisis.lexema);
-
+                return null;
         }
     }
 
