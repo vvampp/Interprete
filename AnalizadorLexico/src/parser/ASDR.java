@@ -518,21 +518,21 @@ public class ASDR implements Parser{
     public Expression LOGIC_AND_2(Expression expr){
         Token operador;
         Expression _expr;
-        ExprBinary expb;
+        ExprLogical expb;
 
         switch (this.preanalisis.getTipo()){
             case BANG_EQUAL:
                 match(TipoToken.BANG_EQUAL);
                 operador = previous();
                 _expr = COMPARISON();
-                expb = new ExprBinary(expr, operador, _expr);
+                expb = new ExprLogical(expr, operador, _expr);
                 return EQUALITY_2(expb);
 
             case EQUAL_EQUAL:
                 match(TipoToken.EQUAL_EQUAL);
                 operador = previous();
                 _expr = COMPARISON();
-                expb = new ExprBinary(expr, operador, _expr);
+                expb = new ExprLogical(expr, operador, _expr);
                 return EQUALITY_2(expb);
 
             default:
