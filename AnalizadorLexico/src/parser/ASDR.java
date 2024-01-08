@@ -786,10 +786,12 @@ public class ASDR implements Parser{
     PARAMETERS_OPC -> PARAMETERS
                     -> E
     */
-    public void PARAMETERS_OPC(){
+    public List <Token> PARAMETERS_OPC(){
+        List <Token> parameterList = new ArrayList<>();
         if(preanalisis.tipo == TipoToken.IDENTIFIER){
-            PARAMETERS();
+            PARAMETERS(parameterList);
         }
+        return parameterList;
     }
 
     // PARAMETERS -> id PARAMETERS_2
