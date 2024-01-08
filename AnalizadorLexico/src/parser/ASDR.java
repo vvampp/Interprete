@@ -765,18 +765,20 @@ public class ASDR implements Parser{
 
     /*      OTROS      */
     // FUNCTION -> id ( PARAMETERS_OPC ) BLOCK
-    public void FUNCTION(){
-        switch (this.preanalisis.getTipo()){
-            case IDENTIFIER:
-                match(TipoToken.IDENTIFIER);
-                match(TipoToken.LEFT_PAREN);
-                PARAMETERS_OPC();
-                match(TipoToken.RIGHT_PAREN);
-                break;
-            default:
-                this.hayErrores=true;
-                System.out.println("Error en la lexema "+ preanalisis.lexema + ": Se esperaba un id");
-                break;
+    public Statement FUNCTION(){
+        if(preanalisis.tipo == TipoToken.IDENTIFIER){
+            match(TipoToken.IDENTIFIER);
+            Token name = previous();
+            match(TipoToken.LEFT_PAREN);
+            // Parametros opcionales que puede contener una funcion, retorna una lista de tokens la cual contiene los identificadores de los parametros
+            List <Token> parameterList = PARAMETERS_OPC();
+            match(TipoToken.RIGHT_PAREN);
+            Statement body = BLOCK();
+            return new StmtFunction(name, parameterList, (StmtBlock) body);
+        }else{
+            hayErrores=true;
+            System.out.println("Error en la lexema "+ preanalisis.lexema + ": Se esperaba un id");
+            return null;
         }
     }
 
