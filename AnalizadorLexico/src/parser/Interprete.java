@@ -65,9 +65,9 @@ public class Interprete {
             // no se traslapen los mensajes de error y los tokens
             Thread.sleep(500); // Pausa el programa durante 1 segundo (1000 milisegundos)
 
-            for(Token token : tokens){
-                System.out.println(token);
-            }
+            //for(Token token : tokens){
+            //    System.out.println(token);
+            //}
             Parser parser = new ASDR(tokens);
             parser.parse();
         }
