@@ -795,17 +795,15 @@ public class ASDR implements Parser{
     }
 
     // PARAMETERS -> id PARAMETERS_2
-    public void PARAMETERS(){
-        switch (this.preanalisis.getTipo()) {
-            case IDENTIFIER:
-                match(TipoToken.IDENTIFIER);
-                PARAMETERS_2();
-                break;
-
-            default:
-                this.hayErrores = true;
-                System.out.println("Error en la lexema "+ this.preanalisis.lexema + ": Se esperaba un id");
-                break;
+    public void PARAMETERS(List <Token> parameterList){
+        if(this.preanalisis.tipo == TipoToken.IDENTIFIER){
+            Token paramToken = this.preanalisis;
+            match(TipoToken.IDENTIFIER);
+            parameterList.add(paramToken);
+            PARAMETERS_2(parameterList);
+        }else{
+            this.hayErrores = true;
+            System.out.println("Error en la lexema "+ this.preanalisis.lexema + ": Se esperaba un id");
         }
     }
 
