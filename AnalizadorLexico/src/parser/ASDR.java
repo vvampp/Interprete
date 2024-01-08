@@ -458,8 +458,8 @@ public class ASDR implements Parser{
     //Expresiones
 
     // EXPRESSION -> ASSIGNMENT
-    public void EXPRESSION(){
-        ASSIGNMENT();
+    public Expression EXPRESSION(){
+        return ASSIGNMENT();
     }
 
     // ASSIGNMENT -> LOGIC_OR ASSIGNMENT_OPC
