@@ -1,11 +1,10 @@
 package parser;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import parser.clases.*;
 import tokens.*;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.ArrayList;
 
 public class ASDR implements Parser{
     public int i; // Indice de la lista de tokens
@@ -639,11 +638,12 @@ public class ASDR implements Parser{
     }
 
     // FACTOR -> UNARY FACTOR_2
-    public void FACTOR(){
-        UNARY();
+    public Expression FACTOR(){
+        Expression expr = UNARY();
         if(preanalisis.tipo == TipoToken.STAR || preanalisis.tipo == TipoToken.SLASH){
-            FACTOR_2();
+            expr = FACTOR_2(expr);
         }
+        return expr;
     }
 
     /*
@@ -651,19 +651,29 @@ public class ASDR implements Parser{
                 -> * UNARY FACTOR_2
                 -> E
     */
-    public void FACTOR_2(){
+    public Expression FACTOR_2(Expression expr){
+        Token operador;
+        Expression _expr;
+        ExprBinary expb;
         switch (this.preanalisis.getTipo()){
             case SLASH:
                 match(TipoToken.SLASH);
-                FACTOR_2();
+                operador = previous();
+                _expr = UNARY();
+                expb = new ExprBinary(expr, operador, _expr);
+                return FACTOR_2(expb);
 
             case STAR:
                 match(TipoToken.STAR);
-                FACTOR_2();
+                operador = previous();
+                _expr= UNARY();
+                expb = new ExprBinary(expr, operador, _expr);
+                return FACTOR_2(expb);
 
             default:
                 break;
         }
+        return expr;
     }
 
     /*
@@ -671,48 +681,57 @@ public class ASDR implements Parser{
             -> - UNARY
             -> CALL
     */
-    public void UNARY(){
+    public Expression UNARY(){
+        Token operador;
+        Expression expr;
         switch (this.preanalisis.getTipo()){
             case BANG:
                 match(TipoToken.BANG);
-                UNARY();
-                break;
+                operador = previous();
+                expr = UNARY();
+                return new ExprUnary(operador, expr);
 
             case MINUS:
                 match(TipoToken.MINUS);
-                UNARY();
-                break;
+                operador = previous();
+                expr = UNARY();
+                return new ExprUnary(operador, expr);
 
             case TRUE, FALSE, NULL, NUMBER, STRING, IDENTIFIER, LEFT_PAREN:
-                CALL();
-                break;
+                return CALL();
 
             default:
                 this.hayErrores = true;
                 System.out.println("Error detectado en la lexema "+ this.preanalisis.lexema);
-                break;
+                return null;
 
         }
     }
 
     // CALL -> PRIMARY CALL_2
-    public void CALL(){
-        PRIMARY();
+    public Expression CALL(){
+        Expression expr = PRIMARY();
         if(preanalisis.tipo == TipoToken.LEFT_PAREN){
-            CALL_2();
+            expr = CALL_2(expr);
         }
+        return expr;
     }
 
     /*
     CALL_2 -> ( ARGUMENTS_OPC ) CALL_2
             -> E
     */
-    public void CALL_2(){
+    public Expression CALL_2(Expression expr){
         if(preanalisis.tipo == TipoToken.LEFT_PAREN){
             match(TipoToken.LEFT_PAREN);
+            List <Expression> arguments = ARGUMENTS_OPC();
+            //Argumentos que retorna Arguments_opc()
             match(TipoToken.RIGHT_PAREN);
-            CALL_2();
+            ExprCallFunction ecf = new ExprCallFunction(expr, arguments);
+            CALL_2(ecf);
+
         }
+        return expr;
     }
 
     /*
