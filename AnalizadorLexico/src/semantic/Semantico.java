@@ -31,6 +31,11 @@ public class Semantico {
     // Funcion para analizar las diferentes ramas posibles
     private void analizarDeclarations(List<Statement> declarations, Tabla tablaLocal) {
         for (Statement declaration : declarations) {
+            declaration.ejecutar(tablaLocal);
+
+
+
+
             switch (declaration.getClass().getSimpleName()){
                 case "StmtVar":
                     analizaDeclaracionVariable((StmtVar) declaration, tablaLocal);
@@ -73,7 +78,6 @@ public class Semantico {
             reportarError("Variable '" + varNombre + "' re-definicion.");
         }
         else {
-            //Si no está en la tabla de simbolos, quiere decir que no se esta re-definiendo, por lo que se guarda en la tabla de simbolos propia
             tablaLocal.declararEnTabla(varNombre, declarationVar.getInitializer(), tablaLocal);
         }
 
