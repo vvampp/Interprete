@@ -80,6 +80,13 @@ public class Semantico {
 
     }
 
+    //Se crea una tabla especifica para el sentenciaBloque basada en la tablaPadre y se analizan las declaraciones (sentencias)
+    private void analizaSentenciaBlock(StmtBlock sentenciaBloque, Tabla tablaPadre) {
+        Tabla tablaBloque = new Tabla(tablaPadre);
+        analizarDeclarations(sentenciaBloque.getStatements(), tablaBloque);
+    }
+
+
     private void analizaDeclaracionFuncion(StmtFunction declaracionFuncion, Tabla tablaLocal) {
         String nombreFuncion = declaracionFuncion.getName().getLexema(); // Recuperamos el identificador de la funcion
 
@@ -280,7 +287,7 @@ public class Semantico {
                 }
 
                 // Llamada a la función de Block para crear su hashmap y analizar el cuerpo de la función
-                //analizaSentenciaBlock(declaracionFuncion.getBody(), tablaFuncion);
+                analizaSentenciaBlock(declaracionFuncion.getBody(), tablaFuncion);
             }
         }
     }
