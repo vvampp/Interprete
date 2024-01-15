@@ -36,10 +36,10 @@ public class Semantico {
                     analizaDeclaracionVariable((StmtVar) declaration, tablaLocal);
                     break;
                 case "StmtFunction":
-                    //analizaDeclaracionFuncion((StmtFunction) declaration, tablaLocal);
+                    analizaDeclaracionFuncion((StmtFunction) declaration, tablaLocal);
                     break;
                 case "StmtExpression":
-                    //analizaSentenciaExpresion((StmtExpression) declaration, tablaLocal);
+                    analizaSentenciaExpresion((StmtExpression) declaration, tablaLocal);
                     break;
                 case "StmtIf":
                     analizaSentenciaIf((StmtIf) declaration, tablaLocal);
@@ -79,6 +79,23 @@ public class Semantico {
 
     }
 
+    private void analizaDeclaracionFuncion(StmtFunction declaracionFuncion, Tabla tablaLocal) {
+        String nombreFuncion = declaracionFuncion.getName().getLexema(); // Recuperamos el identificador de la funcion
+
+        //Se verifica si el identificador ya ha sido ingresada en la tabla de simbolos propia o en la de su padre/ancestro
+        if (tablaLocal.retornarValor(nombreFuncion) != null) {
+            reportarError("Función '" + nombreFuncion + "' ya declarada en este ámbito.");
+        } else {
+            //Si no está en el Hashmap, quiere decir que no se esta re-definiendo, por lo que se guarda en la tabla de simbolos propia
+            tablaLocal.declararEnTabla(nombreFuncion, declaracionFuncion, tablaLocal);
+        }
+
+    }
+
+    private void analizaSentenciaExpresion(StmtExpression sentenciaExpresion, Tabla tablaLocal) {
+        //Se manda a llamar la función para analizar la expresión
+        analizaExpression(sentenciaExpresion.getExpression(), tablaLocal);
+    }
     // SWTICH para Expressions
     //Función para analizar las Expresiones con los tipos que se tienen
     private void analizaExpression(Expression expression, Tabla tablaLocal) {
@@ -99,7 +116,7 @@ public class Semantico {
                 //analizarExpresionLlamadaFuncion((ExprCallFunction) expression, tablaLocal);
                 break;
             case "ExprVariable":
-                //analizarExpresionVariable((ExprVariable) expression, tablaLocal);
+                analizarExpresionVariable((ExprVariable) expression, tablaLocal);
                 break;
             default:
                 break;
@@ -222,4 +239,18 @@ public class Semantico {
         }
     }
 
+    //Función para analizar Expresiones de Variables
+    private void analizarExpresionVariable(ExprVariable variableExpression, Tabla tablaLocal) {
+        //Se obtiene el Nombre de la variable
+        String varNombre = variableExpression.getName().getLexema();
+        //Se obtiene el valor asociado al nombre de la variable
+        Object valor = tablaLocal.retornarValor(varNombre);
+        //Se obtiene si está definida en el Hashmap o no
+        boolean definido = tablaLocal.siEstaDefinida(varNombre);
+
+        //Se verifica si el valor de la variable es null y si no está definida
+        if (valor == null && !definido) {
+            reportarError("Variable '" + varNombre + "' no declarada.");
+        }
+    }
 }
