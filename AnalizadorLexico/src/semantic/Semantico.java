@@ -116,7 +116,7 @@ public class Semantico {
                 //analizarExpresionLlamadaFuncion((ExprCallFunction) expression, tablaLocal);
                 break;
             case "ExprVariable":
-                //analizarExpresionVariable((ExprVariable) expression, tablaLocal);
+                analizarExpresionVariable((ExprVariable) expression, tablaLocal);
                 break;
             default:
                 break;
@@ -197,4 +197,18 @@ public class Semantico {
         }
     }
 
+    //Función para analizar Expresiones de Variables
+    private void analizarExpresionVariable(ExprVariable variableExpression, Tabla tablaLocal) {
+        //Se obtiene el Nombre de la variable
+        String varNombre = variableExpression.getName().getLexema();
+        //Se obtiene el valor asociado al nombre de la variable
+        Object valor = tablaLocal.retornarValor(varNombre);
+        //Se obtiene si está definida en el Hashmap o no
+        boolean definido = tablaLocal.siEstaDefinida(varNombre);
+
+        //Se verifica si el valor de la variable es null y si no está definida
+        if (valor == null && !definido) {
+            reportarError("Variable '" + varNombre + "' no declarada.");
+        }
+    }
 }
