@@ -1,5 +1,8 @@
 package parser.clases;
-import tokens.*;
+
+import parser.clases.Expression;
+import tokens.Token;
+
 public class ExprVariable extends Expression {
     public final Token name;
 

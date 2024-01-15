@@ -1,5 +1,7 @@
 package semantic;
 
+
+import parser.clases.ExprVariable;
 import parser.clases.*;
 
 import java.util.List;
@@ -24,6 +26,7 @@ public class Semantico {
         System.out.println("Error Semántico: " + mensaje);
     }
 
+    // SWITCH para Declarations
     // Funcion para analizar las diferentes ramas posibles
     private void analizarDeclarations(List<Statement> declarations, Tabla tablaLocal) {
         for (Statement declaration : declarations) {
@@ -73,6 +76,54 @@ public class Semantico {
             tablaLocal.declararEnTabla(varNombre, declarationVar.getInitializer(), tablaLocal);
         }
 
+    }
+
+    // SWTICH para Expressions
+    //Función para analizar las Expresiones con los tipos que se tienen
+    private void analizaExpression(Expression expression, Tabla tablaLocal) {
+        switch (expression.getClass().getSimpleName()){
+            case "ExprAssign":
+                //analizarExpresionAsignacion((ExprAssign) expression, tablaLocal);
+                break;
+            case "ExprLogical":
+                //analizarExpresionLogica((ExprLogical) expression, tablaLocal);
+                break;
+            case "ExprBinary":
+                //analizarExpresionBinaria((ExprBinary) expression, tablaLocal);
+                break;
+            case "ExprUnary":
+                //analizarExpresionUnaria((ExprUnary) expression, tablaLocal);
+                break;
+            case "ExprCallFunction":
+                //analizarExpresionLlamadaFuncion((ExprCallFunction) expression, tablaLocal);
+                break;
+            case "ExprVariable":
+                //analizarExpresionVariable((ExprVariable) expression, tablaLocal);
+                break;
+            default:
+                break;
+
+        }
+    }
+
+    private void analizarExpresionAsignacion(ExprAssign expresionAsignar, Tabla tablaLocal) {
+
+        //Se obtiene el nombre de la variable a la que se está asignando
+        String varNombre = expresionAsignar.getName().getLexema();
+        //Se obtiene el valor asociado con ese nombre de variable
+        Object valor = tablaLocal.retornarValor(varNombre);
+        //Se comprueba si el nombre de la variable está en el Hashmap
+        boolean definido = tablaLocal.siEstaDefinida(varNombre);
+
+        //Se verifica si esta variable tiene un valor null y no está definido en el Hashmap
+        if (valor == null && !definido) {
+            reportarError("Error en la asignación: Variable '" + varNombre + "' no declarada previamente.");
+        } else {
+            //Se manda a analizar el valor de la asignación
+            analizaExpression(expresionAsignar.getValue(), tablaLocal);
+            // Actualizar el valor en el ámbito local
+            tablaLocal.declararEnTabla(varNombre, expresionAsignar.getValue(), tablaLocal);
+        }
     }
 
 }
