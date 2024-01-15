@@ -4,7 +4,6 @@ package semantic;
 import parser.clases.ExprVariable;
 import parser.clases.*;
 
-import java.util.HashMap;
 import java.util.List;
 
 public class Semantico {
@@ -48,7 +47,7 @@ public class Semantico {
                     //analizaSentenciaLoop((StmtLoop) declaration, tablaLocal);
                     break;
                 case "StmtPrint":
-                    analizaSentenciaPrint((StmtPrint) declaration, tablaLocal);
+                    //analizaSentenciaPrint((StmtPrint) declaration, tablaLocal);
                     break;
                 case "StmtReturn":
                     //analizaSentenciaReturn((StmtReturn) declaration, tablaLocal);
@@ -78,55 +77,6 @@ public class Semantico {
         }
 
     }
-
-    //Función para analizar los Prints
-    private void analizaSentenciaPrint(StmtPrint imprimirSentencia, Tabla tablaLocal) {
-        //Manda a llamar la función para analizar la Expresión que tenga el Print
-        analizaExpression(imprimirSentencia.getExpression(), tablaLocal);
-
-        // Obtén el valor de la expresión a imprimir
-        Object imprimirValor = tablaLocal.getValor(imprimirSentencia.getExpression(), tablaLocal);
-
-
-        // Determina el tipo de expresión print se tiene
-        int tipoPrint = evaluarTipoPrint(imprimirSentencia, tablaLocal);
-
-        // Imprime en la consola el valor de la expresión
-        switch (tipoPrint){
-            // Number
-            case 1:
-                double doubleValue = ((Number) imprimirValor).doubleValue();
-                if (doubleValue % 1 == 0) {
-                    // Si el número tiene decimales 0, imprímelo como entero
-                    System.out.println(((Number) imprimirValor).longValue());
-                } else {
-                    // Si el número tiene decimales, imprímelo como double
-                    System.out.println(imprimirValor);
-                }
-                break;
-            // String
-            case 2:
-                System.out.println(imprimirValor);
-                break;
-
-            default:
-                break;
-        }
-    }
-
-    private int evaluarTipoPrint(StmtPrint imprimirSentencia, Tabla tablaLocal){
-        analizaExpression(imprimirSentencia.getExpression(), tablaLocal);
-
-        // Obtén el valor de la expresión a imprimir
-        Object imprimirValor = tablaLocal.getValor(imprimirSentencia.getExpression(), tablaLocal);
-
-        // retorna el valor de la instancia como String para el switch de la función principal
-        // de análisis de la sentencia print
-        if(imprimirValor instanceof Number)return 1;
-        else if(imprimirValor instanceof String) return 2;
-        return 0;
-    }
-
 
     // SWTICH para Expressions
     //Función para analizar las Expresiones con los tipos que se tienen
@@ -175,7 +125,5 @@ public class Semantico {
             tablaLocal.declararEnTabla(varNombre, expresionAsignar.getValue(), tablaLocal);
         }
     }
-
-
 
 }
