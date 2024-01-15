@@ -9,4 +9,16 @@ public class StmtIf extends Statement {
         this.thenBranch = thenBranch;
         this.elseBranch = elseBranch;
     }
+
+    public final Expression getCondition() {
+        return condition;
+    }
+
+    public final Statement getThenBranch() {
+        return thenBranch;
+    }
+
+    public final Statement getElseBranch() {
+        return elseBranch;
+    }
 }
