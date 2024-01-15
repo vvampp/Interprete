@@ -4,6 +4,7 @@ package semantic;
 import parser.clases.ExprVariable;
 import parser.clases.*;
 
+import java.util.HashMap;
 import java.util.List;
 
 public class Semantico {
@@ -83,7 +84,7 @@ public class Semantico {
     private void analizaExpression(Expression expression, Tabla tablaLocal) {
         switch (expression.getClass().getSimpleName()){
             case "ExprAssign":
-                //analizarExpresionAsignacion((ExprAssign) expression, tablaLocal);
+                analizarExpresionAsignacion((ExprAssign) expression, tablaLocal);
                 break;
             case "ExprLogical":
                 //analizarExpresionLogica((ExprLogical) expression, tablaLocal);
@@ -104,6 +105,59 @@ public class Semantico {
                 break;
 
         }
+    }
+
+    //Función para analizar los Prints
+    private void analizaSentenciaPrint(StmtPrint imprimirSentencia, Tabla tablaLocal) {
+        //Manda a llamar la función para analizar la Expresión que tenga el Print
+        analizaExpression(imprimirSentencia.getExpression(), tablaLocal);
+
+        // Obtén el valor de la expresión a imprimir
+        Object imprimirValor = tablaLocal.getValor(imprimirSentencia.getExpression(), tablaLocal);
+
+        // determina el tipo de expresión print se tiene
+        int tipoPrint = evaluarTipoPrint(imprimirSentencia, tablaLocal);
+
+        // Imprime en la consola el valor de la expresión
+        switch (tipoPrint){
+            // Number
+            case 1:
+                double doubleValue = ((Number) imprimirValor).doubleValue();
+                if (doubleValue % 1 == 0) {
+                    // Si el número tiene decimales 0, imprímelo como entero
+                    System.out.println(((Number) imprimirValor).longValue());
+                } else {
+                    // Si el número tiene decimales, imprímelo como double
+                    System.out.println(imprimirValor);
+                }
+                break;
+            // String
+            case 2:
+                System.out.println(imprimirValor);
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    // determina el tipo de expresión print se tiene y retorna un valor entero para el switch de salida
+    // en cosola
+
+    private int evaluarTipoPrint(StmtPrint imprimirSentencia, Tabla tablaLocal){
+        analizaExpression(imprimirSentencia.getExpression(), tablaLocal);
+
+        // Obtén el valor de la expresión a imprimir
+        Object imprimirValor = tablaLocal.getValor(imprimirSentencia.getExpression(), tablaLocal);
+
+        // retorna el valor de la instancia como String para el switch de la función principal
+        // de análisis de la sentencia print
+        if(imprimirValor instanceof Number)return 1;
+        else if(imprimirValor instanceof String) return 2;
+        else if(imprimirValor instanceof ExprLiteral) return 3;
+        else if(imprimirValor instanceof ExprBinary) return 4;
+        else if(imprimirValor instanceof Double) return 1;
+        return 0;
     }
 
     private void analizarExpresionAsignacion(ExprAssign expresionAsignar, Tabla tablaLocal) {

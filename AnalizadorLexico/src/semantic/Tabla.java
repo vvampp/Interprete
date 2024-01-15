@@ -72,7 +72,28 @@ public class Tabla {
         }
     }
 
-
+    //Función para obtener el valor de una expresión
+    // (ExprVariable o ExprLiteral).
+    public Object getValor(Expression expression, Tabla tablaLocal) {
+        if (expression instanceof ExprVariable) {
+            String varNombre = getNombreVariable(expression);
+            Object valor = tablaLocal.retornarValor(varNombre);
+            if(valor instanceof String || valor instanceof Number){
+                return valor;
+            }else if(valor instanceof ExprVariable){
+                Expression var = (Expression) valor;
+                String nombreVariable = getNombreVariable(var);
+                return tablaLocal.retornarValor(nombreVariable);
+            }else if(valor instanceof ExprBinary){
+                Expression expr = (Expression) valor;
+                valor = getValor(expr, tablaLocal);
+                return valor;
+            }else{
+                return valor;
+            }
+        }
+        return null;
+    }
 
 
 }
