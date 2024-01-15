@@ -36,10 +36,10 @@ public class Semantico {
                     analizaDeclaracionVariable((StmtVar) declaration, tablaLocal);
                     break;
                 case "StmtFunction":
-                    //analizaDeclaracionFuncion((StmtFunction) declaration, tablaLocal);
+                    analizaDeclaracionFuncion((StmtFunction) declaration, tablaLocal);
                     break;
                 case "StmtExpression":
-                    //analizaSentenciaExpresion((StmtExpression) declaration, tablaLocal);
+                    analizaSentenciaExpresion((StmtExpression) declaration, tablaLocal);
                     break;
                 case "StmtIf":
                     //analizaSentenciaIf((StmtIf) declaration, tablaLocal);
@@ -79,6 +79,23 @@ public class Semantico {
 
     }
 
+    private void analizaDeclaracionFuncion(StmtFunction declaracionFuncion, Tabla tablaLocal) {
+        String nombreFuncion = declaracionFuncion.getName().getLexema(); // Recuperamos el identificador de la funcion
+
+        //Se verifica si el identificador ya ha sido ingresada en la tabla de simbolos propia o en la de su padre/ancestro
+        if (tablaLocal.retornarValor(nombreFuncion) != null) {
+            reportarError("Función '" + nombreFuncion + "' ya declarada en este ámbito.");
+        } else {
+            //Si no está en el Hashmap, quiere decir que no se esta re-definiendo, por lo que se guarda en la tabla de simbolos propia
+            tablaLocal.declararEnTabla(nombreFuncion, declaracionFuncion, tablaLocal);
+        }
+
+    }
+
+    private void analizaSentenciaExpresion(StmtExpression sentenciaExpresion, Tabla tablaLocal) {
+        //Se manda a llamar la función para analizar la expresión
+        analizaExpression(sentenciaExpresion.getExpression(), tablaLocal);
+    }
     // SWTICH para Expressions
     //Función para analizar las Expresiones con los tipos que se tienen
     private void analizaExpression(Expression expression, Tabla tablaLocal) {
