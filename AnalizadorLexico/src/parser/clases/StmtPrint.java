@@ -13,10 +13,4 @@ public class StmtPrint extends Statement {
         return this.expression;
     }
 
-    @Override
-    public void ejecutar(Tabla tabla) {
-        Object resltado = expression.resolver(tabla);
-
-        System.out.println(resltado);
-    }
 }

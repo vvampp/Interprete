@@ -32,11 +32,6 @@ public class Semantico {
     // Funcion para analizar las diferentes ramas posibles
     private void analizarDeclarations(List<Statement> declarations, Tabla tablaLocal) {
         for (Statement declaration : declarations) {
-            declaration.ejecutar(tablaLocal);
-
-
-
-
             switch (declaration.getClass().getSimpleName()){
                 case "StmtVar":
                     analizaDeclaracionVariable((StmtVar) declaration, tablaLocal);

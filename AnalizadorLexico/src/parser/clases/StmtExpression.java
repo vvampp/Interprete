@@ -13,9 +13,4 @@ public class StmtExpression extends Statement {
     public final Expression getExpression() {
         return expression;
     }
-
-    @Override
-    public void ejecutar(Tabla tabla) {
-
-    }
 }
