@@ -3,6 +3,7 @@ package semantic;
 
 import parser.clases.ExprVariable;
 import parser.clases.*;
+import tokens.Token;
 
 import java.util.HashMap;
 import java.util.List;
@@ -113,7 +114,7 @@ public class Semantico {
                 //analizarExpresionUnaria((ExprUnary) expression, tablaLocal);
                 break;
             case "ExprCallFunction":
-                //analizarExpresionLlamadaFuncion((ExprCallFunction) expression, tablaLocal);
+                analizarExpresionLlamadaFuncion((ExprCallFunction) expression, tablaLocal);
                 break;
             case "ExprVariable":
                 analizarExpresionVariable((ExprVariable) expression, tablaLocal);
@@ -197,6 +198,50 @@ public class Semantico {
         }
     }
 
+    //Función para analizar Expresiones de llamadas a Funciones
+    private void analizarExpresionLlamadaFuncion(ExprCallFunction expresionLlamadaFuncion, Tabla tablaLocal) {
+        //Se obtiene el nombre de la función
+        String nombreFuncion = ((ExprVariable) expresionLlamadaFuncion.getCallee()).getName().getLexema();
+
+        //Se comprueba si el nombre de la función está en el Hashmap
+        if (tablaLocal.retornarValor(nombreFuncion) == null) {
+            reportarError("Función '" + nombreFuncion + "' no declarada en este ámbito.");
+        } else {
+
+            // Se obtiene la declaración de la función del Alcance.
+            StmtFunction declaracionFuncion = (StmtFunction) tablaLocal.retornarValor(nombreFuncion);
+
+            // Verificar si se tiene el número correcto de argumentos entre la función declarada y la llamada a esta.
+            int argumentosEsp = declaracionFuncion.getParameters().size();
+            int argumentosObt = expresionLlamadaFuncion.getArguments().size();
+
+            // Se comprueba si no son los mismos números de argumentos, marca error.
+            if (argumentosEsp != argumentosObt) {
+                reportarError("Error de llamada a función: La función '" + nombreFuncion +
+                        "' espera " + argumentosEsp + " argumento(s), pero se proporcionaron " + argumentosObt + ".");
+            }else{
+                // Obtener la lista de parámetros de la función
+                List<Token> parametros = declaracionFuncion.getParameters();
+                // Crear un nuevo ámbito para la asignación local de variables
+                Tabla tablaFuncion = new Tabla(tablaLocal);
+
+                // Asignar los valores de los argumentos a las variables correspondientes
+                for (int i = 0; i < argumentosObt; i++) {
+                    String paramNombre = parametros.get(i).getLexema();
+                    Expression arguVal = expresionLlamadaFuncion.getArguments().get(i);
+
+                    // Analizar la expresión del argumento
+                    analizaExpression(arguVal, tablaFuncion);
+
+                    // Asignar el valor al parámetro en el nuevo ámbito
+                    tablaFuncion.declararEnTabla(paramNombre, arguVal, tablaFuncion);
+                }
+
+                // Llamada a la función de Block para crear su hashmap y analizar el cuerpo de la función
+                //analizaSentenciaBlock(declaracionFuncion.getBody(), tablaFuncion);
+            }
+        }
+    }
     //Función para analizar Expresiones de Variables
     private void analizarExpresionVariable(ExprVariable variableExpression, Tabla tablaLocal) {
         //Se obtiene el Nombre de la variable
