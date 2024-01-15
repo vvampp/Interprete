@@ -1,5 +1,8 @@
 package parser;
+import parser.clases.Statement;
+
+import java.util.List;
 
 public interface Parser {
-    boolean parse();
+    List<Statement> parse();
 }

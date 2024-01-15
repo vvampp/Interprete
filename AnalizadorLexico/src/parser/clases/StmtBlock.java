@@ -8,4 +8,9 @@ public class StmtBlock extends Statement{
     public StmtBlock(List<Statement> statements) {
         this.statements = statements;
     }
+
+    public List<Statement> getStatements() {
+        return statements;
+    }
+
 }
