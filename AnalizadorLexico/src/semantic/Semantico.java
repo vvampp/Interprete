@@ -43,13 +43,13 @@ public class Semantico {
                     analizaSentenciaExpresion((StmtExpression) declaration, tablaLocal);
                     break;
                 case "StmtIf":
-                    //analizaSentenciaIf((StmtIf) declaration, tablaLocal);
+                    analizaSentenciaIf((StmtIf) declaration, tablaLocal);
                     break;
                 case "StmtLoop":
                     //analizaSentenciaLoop((StmtLoop) declaration, tablaLocal);
                     break;
                 case "StmtPrint":
-                    //analizaSentenciaPrint((StmtPrint) declaration, tablaLocal);
+                    analizaSentenciaPrint((StmtPrint) declaration, tablaLocal);
                     break;
                 case "StmtReturn":
                     //analizaSentenciaReturn((StmtReturn) declaration, tablaLocal);
@@ -176,6 +176,48 @@ public class Semantico {
         else if(imprimirValor instanceof ExprBinary) return 4;
         else if(imprimirValor instanceof Double) return 1;
         return 0;
+    }
+
+    //Función para analizar los If
+    private void analizaSentenciaIf(StmtIf ifStatement, Tabla tablaLocal) {
+
+        //Se manda a llamar la función para analizar la expresión para la condición
+        analizaExpression(ifStatement.getCondition(), tablaLocal);
+
+        // Se verifica si la condicion evaluada es true o false
+        if(analizaCondicion(ifStatement.getCondition(), tablaLocal)){
+            //Se manda a llamar la función para analizar el cuerpo del If
+            //analizaSentencia(ifStatement.getThenBranch(), tablaLocal);
+        }else{
+            //Se valida si tiene un else el if para analizarlo
+            if (ifStatement.getElseBranch() != null) {
+                //analizaSentencia(ifStatement.getElseBranch(), tablaLocal);
+            }
+        }
+    }
+
+    //Función para EVALUAR condiciones y ver si son true o false
+    private boolean analizaCondicion(Expression expression, Tabla tablaLocal){
+        boolean verdad;
+        verdad = true;
+        return switch (expression.getClass().getSimpleName()) {
+            //Si es una expresión Binaria
+            case "ExprBinary" -> {
+                //verdad = condicionBinary(expression, tablaLocal);
+                yield verdad;
+            }
+            // Si es una expresión logica
+            case "ExprLogical" -> {
+                //verdad = condicionLogica(expression, tablaLocal);
+                yield verdad;
+            }
+            // Si es una expresión literal
+            case "ExprLiteral" -> {
+                //verdad = condicionLiteral(expression, tablaLocal);
+                yield verdad;
+            }
+            default -> false;
+        };
     }
 
     private void analizarExpresionAsignacion(ExprAssign expresionAsignar, Tabla tablaLocal) {
