@@ -39,14 +39,11 @@ public class Semantico {
                 case "StmtFunction":
                     analizaDeclaracionFuncion((StmtFunction) declaration, tablaLocal);
                     break;
-                case "StmtExpression":
-                    analizaSentenciaExpresion((StmtExpression) declaration, tablaLocal);
-                    break;
                 case "StmtIf":
                     analizaSentenciaIf((StmtIf) declaration, tablaLocal);
                     break;
                 case "StmtLoop":
-                    //analizaSentenciaLoop((StmtLoop) declaration, tablaLocal);
+                    analizaSentenciaLoop((StmtLoop) declaration, tablaLocal);
                     break;
                 case "StmtPrint":
                     analizaSentenciaPrint((StmtPrint) declaration, tablaLocal);
@@ -55,7 +52,10 @@ public class Semantico {
                     //analizaSentenciaReturn((StmtReturn) declaration, tablaLocal);
                     break;
                 case "StmtBlock":
-                    //analizaSentenciaBlock((StmtBlock) declaration, tablaLocal);
+                    analizaSentenciaBlock((StmtBlock) declaration, tablaLocal);
+                    break;
+                case "StmtExpression":
+                    analizaSentenciaExpresion((StmtExpression) declaration, tablaLocal);
                     break;
                 default:
                     break;
@@ -79,13 +79,6 @@ public class Semantico {
 
     }
 
-    //Se crea una tabla especifica para el sentenciaBloque basada en la tablaPadre y se analizan las declaraciones (sentencias)
-    private void analizaSentenciaBlock(StmtBlock sentenciaBloque, Tabla tablaPadre) {
-        Tabla tablaBloque = new Tabla(tablaPadre);
-        analizarDeclarations(sentenciaBloque.getStatements(), tablaBloque);
-    }
-
-
     private void analizaDeclaracionFuncion(StmtFunction declaracionFuncion, Tabla tablaLocal) {
         String nombreFuncion = declaracionFuncion.getName().getLexema(); // Recuperamos el identificador de la funcion
 
@@ -99,35 +92,90 @@ public class Semantico {
 
     }
 
-    private void analizaSentenciaExpresion(StmtExpression sentenciaExpresion, Tabla tablaLocal) {
-        //Se manda a llamar la función para analizar la expresión
-        analizaExpression(sentenciaExpresion.getExpression(), tablaLocal);
+    //Función para EVALUAR condiciones y ver si son true o false
+    // Utilizada en analizaSentenciaIf y analizaSentenciaLoop
+    private boolean analizaCondicion(Expression expression, Tabla tablaLocal){
+        boolean verdad;
+        verdad = true;
+        return switch (expression.getClass().getSimpleName()) {
+            //Si es una expresión Binaria
+            case "ExprBinary" -> {
+                //verdad = condicionBinary(expression, tablaLocal);
+                yield verdad;
+            }
+            // Si es una expresión logica
+            case "ExprLogical" -> {
+                //verdad = condicionLogica(expression, tablaLocal);
+                yield verdad;
+            }
+            // Si es una expresión literal
+            case "ExprLiteral" -> {
+                //verdad = condicionLiteral(expression, tablaLocal);
+                yield verdad;
+            }
+            default -> false;
+        };
     }
-    // SWTICH para Expressions
-    //Función para analizar las Expresiones con los tipos que se tienen
-    private void analizaExpression(Expression expression, Tabla tablaLocal) {
-        switch (expression.getClass().getSimpleName()){
-            case "ExprAssign":
-                analizarExpresionAsignacion((ExprAssign) expression, tablaLocal);
-                break;
-            case "ExprLogical":
-                //analizarExpresionLogica((ExprLogical) expression, tablaLocal);
-                break;
-            case "ExprBinary":
-                //analizarExpresionBinaria((ExprBinary) expression, tablaLocal);
-                break;
-            case "ExprUnary":
-                //analizarExpresionUnaria((ExprUnary) expression, tablaLocal);
-                break;
-            case "ExprCallFunction":
-                analizarExpresionLlamadaFuncion((ExprCallFunction) expression, tablaLocal);
-                break;
-            case "ExprVariable":
-                analizarExpresionVariable((ExprVariable) expression, tablaLocal);
-                break;
-            default:
-                break;
 
+
+    //Función para analizar los If
+    private void analizaSentenciaIf(StmtIf ifStatement, Tabla tablaLocal) {
+
+        //Se manda a llamar la función para analizar la expresión para la condición
+        analizaExpression(ifStatement.getCondition(), tablaLocal);
+
+        // Se verifica si la condicion evaluada es true o false
+        if(analizaCondicion(ifStatement.getCondition(), tablaLocal)){
+            //Se manda a llamar la función para analizar el cuerpo del If
+            //analizaSentencia(ifStatement.getThenBranch(), tablaLocal);
+        }else{
+            //Se valida si tiene un else el if para analizarlo
+            if (ifStatement.getElseBranch() != null) {
+                //analizaSentencia(ifStatement.getElseBranch(), tablaLocal);
+            }
+        }
+    }
+
+    private void analizaSentenciaLoop(StmtLoop sentenciaLoop, Tabla tablaLocal) {
+
+        //Manda a llamar la función de analizar Expresión para la condición del Loop
+        analizaExpression(sentenciaLoop.getCondition(), tablaLocal);
+
+        //Se crea un Alcance para el loop
+        Tabla tablaBloque = new Tabla(tablaLocal);
+
+        //Se verifica si se cumple la condición para entrar al While
+        if(analizaCondicion(sentenciaLoop.getCondition(), tablaLocal)){
+            // hace falta una función para analizar el cuerop del loop
+            analizaBodyLoop((StmtBlock)sentenciaLoop.getBody(), tablaBloque); //Se realiza el análisis del Body porque la condición se cumplió
+
+            // para aplicar el loop hace falta una función que analice si la condición se cumple o no
+            //Se va a analizar el número de veces que se cumpla la condción del While
+            while(analizaCondicion(sentenciaLoop.getCondition(), tablaBloque)){
+                analizaBodyLoop((StmtBlock)sentenciaLoop.getBody(), tablaBloque);
+            }
+
+        }
+
+    }
+
+    //Función para analizar los BlockStatement de los Loop
+    private void analizaBodyLoop(StmtBlock sentenciaBloque, Tabla tablaBloque) {
+
+        List<Statement> statements = sentenciaBloque.getStatements(); //Se recuperan los Statements del Block (ramas del arbol)
+
+        //Se verifica si el Block tiene Statements
+        if (!statements.isEmpty()) {
+            Statement primeraSentencia = statements.get(0);
+
+            //Si el primer Statement es un StmtBlock es que es un ciclo for y para evitar el error se ingresa a su Lista de Statements que contiene
+            if (primeraSentencia instanceof StmtBlock) {
+                List<Statement> blockStatements= ((StmtBlock) primeraSentencia).getStatements();
+                analizarDeclarations(blockStatements, tablaBloque); // Se analiza de la misma manera que el arbol en general
+            }else{
+                //Si no, es que era un While y se puede analizar directo
+                analizarDeclarations(statements, tablaBloque); // Se analiza de la misma manera que el arbol en general
+            }
         }
     }
 
@@ -184,46 +232,49 @@ public class Semantico {
         return 0;
     }
 
-    //Función para analizar los If
-    private void analizaSentenciaIf(StmtIf ifStatement, Tabla tablaLocal) {
 
-        //Se manda a llamar la función para analizar la expresión para la condición
-        analizaExpression(ifStatement.getCondition(), tablaLocal);
-
-        // Se verifica si la condicion evaluada es true o false
-        if(analizaCondicion(ifStatement.getCondition(), tablaLocal)){
-            //Se manda a llamar la función para analizar el cuerpo del If
-            //analizaSentencia(ifStatement.getThenBranch(), tablaLocal);
-        }else{
-            //Se valida si tiene un else el if para analizarlo
-            if (ifStatement.getElseBranch() != null) {
-                //analizaSentencia(ifStatement.getElseBranch(), tablaLocal);
-            }
-        }
+    //Se crea una tabla especifica para el sentenciaBloque basada en la tablaPadre y se analizan las declaraciones (sentencias)
+    private void analizaSentenciaBlock(StmtBlock sentenciaBloque, Tabla tablaPadre) {
+        Tabla tablaBloque = new Tabla(tablaPadre);
+        analizarDeclarations(sentenciaBloque.getStatements(), tablaBloque);
     }
 
-    //Función para EVALUAR condiciones y ver si son true o false
-    private boolean analizaCondicion(Expression expression, Tabla tablaLocal){
-        boolean verdad;
-        verdad = true;
-        return switch (expression.getClass().getSimpleName()) {
-            //Si es una expresión Binaria
-            case "ExprBinary" -> {
-                //verdad = condicionBinary(expression, tablaLocal);
-                yield verdad;
-            }
-            // Si es una expresión logica
-            case "ExprLogical" -> {
-                //verdad = condicionLogica(expression, tablaLocal);
-                yield verdad;
-            }
-            // Si es una expresión literal
-            case "ExprLiteral" -> {
-                //verdad = condicionLiteral(expression, tablaLocal);
-                yield verdad;
-            }
-            default -> false;
-        };
+
+
+
+    //Función para analizar los Loop (For o while)
+
+
+    private void analizaSentenciaExpresion(StmtExpression sentenciaExpresion, Tabla tablaLocal) {
+        //Se manda a llamar la función para analizar la expresión
+        analizaExpression(sentenciaExpresion.getExpression(), tablaLocal);
+    }
+    // SWTICH para Expressions
+    //Función para analizar las Expresiones con los tipos que se tienen
+    private void analizaExpression(Expression expression, Tabla tablaLocal) {
+        switch (expression.getClass().getSimpleName()){
+            case "ExprAssign":
+                analizarExpresionAsignacion((ExprAssign) expression, tablaLocal);
+                break;
+            case "ExprLogical":
+                //analizarExpresionLogica((ExprLogical) expression, tablaLocal);
+                break;
+            case "ExprBinary":
+                //analizarExpresionBinaria((ExprBinary) expression, tablaLocal);
+                break;
+            case "ExprUnary":
+                //analizarExpresionUnaria((ExprUnary) expression, tablaLocal);
+                break;
+            case "ExprCallFunction":
+                analizarExpresionLlamadaFuncion((ExprCallFunction) expression, tablaLocal);
+                break;
+            case "ExprVariable":
+                analizarExpresionVariable((ExprVariable) expression, tablaLocal);
+                break;
+            default:
+                break;
+
+        }
     }
 
     private void analizarExpresionAsignacion(ExprAssign expresionAsignar, Tabla tablaLocal) {
@@ -290,6 +341,10 @@ public class Semantico {
             }
         }
     }
+
+
+
+
     //Función para analizar Expresiones de Variables
     private void analizarExpresionVariable(ExprVariable variableExpression, Tabla tablaLocal) {
         //Se obtiene el Nombre de la variable
