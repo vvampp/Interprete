@@ -8,4 +8,12 @@ public class StmtVar extends Statement {
         this.name = name;
         this.initializer = initializer;
     }
+
+    public final Token getName() {
+        return name;
+    }
+
+    public final Expression getInitializer() {
+        return initializer;
+    }
 }

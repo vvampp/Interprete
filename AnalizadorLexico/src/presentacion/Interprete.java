@@ -5,6 +5,7 @@ import parser.Parser;
 import parser.clases.Statement;
 import scanner.Scanner;
 import tokens.Token;
+import semantic.Semantico;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -40,8 +41,8 @@ public class Interprete {
         if(existenErrores) System.exit(65);
 
         if(arbol != null){
-            //Semantico analizadorSemantico = new Semantico();
-            //analizadorSemantico.analizar(arbol, analizadorSemantico.tablaRaiz);
+            Semantico analizadorSemantico = new Semantico();
+            analizadorSemantico.analizar(arbol, analizadorSemantico.tablaRaiz);
         }
 
     }
@@ -59,8 +60,8 @@ public class Interprete {
             existenErrores = false;
 
             if(arbol != null){
-                //Semantico analizadorSemantico = new Semantico();
-                //analizadorSemantico.analizar(arbol, analizadorSemantico.tablaRaiz);
+                Semantico analizadorSemantico = new Semantico();
+                analizadorSemantico.analizar(arbol, analizadorSemantico.tablaRaiz);
             }
         }
     }
@@ -89,8 +90,8 @@ public class Interprete {
     para reportar los errores:
     Interprete.error(....);
      */
-    static void error(int linea, String mensaje){
-        reportar(linea, "", mensaje);
+    public static void error(int linea, String posicion , String mensaje){
+        reportar(linea, posicion, mensaje);
     }
 
     private static void reportar(int linea, String posicion, String mensaje){

@@ -5,6 +5,8 @@ import tokens.*;
 import java.util.List;
 import java.util.Map;
 
+import presentacion.Interprete;
+
 public class Scanner {
     // Mapa de palabras reservadas asociada a la clase Scanner
     private static final Map<String, TipoToken> palabrasReservadas;

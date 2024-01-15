@@ -5,4 +5,9 @@ public class ExprLiteral extends Expression {
     public ExprLiteral(Object value) {
         this.value = value;
     }
+
+    public Object getValue(){
+        return value;
+    }
+
 }

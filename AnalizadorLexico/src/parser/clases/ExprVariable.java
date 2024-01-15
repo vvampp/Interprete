@@ -6,4 +6,8 @@ public class ExprVariable extends Expression {
     public ExprVariable(Token name) {
         this.name = name;
     }
+
+    public Token getName(){
+        return name;
+    }
 }
