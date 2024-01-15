@@ -6,4 +6,8 @@ public class StmtPrint extends Statement {
     public StmtPrint(Expression expression) {
         this.expression = expression;
     }
+
+    public final Expression getExpression(){
+        return this.expression;
+    }
 }
