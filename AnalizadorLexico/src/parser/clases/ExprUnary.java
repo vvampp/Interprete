@@ -9,4 +9,8 @@ public class ExprUnary extends Expression{
         this.operator = operator;
         this.right = right;
     }
+
+    public Expression getOperand(){
+        return right;
+    }
 }

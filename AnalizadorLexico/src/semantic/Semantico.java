@@ -10,7 +10,7 @@ import java.util.List;
 
 public class Semantico {
     public final Tabla tablaRaiz; // Tabla de simbolos raiz
-    public String retornoFuncion;
+
     // Constructor
     public Semantico(){
         // Se crea un objeto tipo Tabla de Simbolos donde el padre es null, porque esta es la raiz del arbol
@@ -126,16 +126,16 @@ public class Semantico {
         // Se verifica si la condicion evaluada es true o false
         if(analizaCondicion(ifStatement.getCondition(), tablaLocal)){
             //Se manda a llamar la función para analizar el cuerpo del If
-            //analizaSentencia(ifStatement.getThenBranch(), tablaLocal);
+                analizaSentencia(ifStatement.getThenBranch(), tablaLocal);
         }else{
             //Se valida si tiene un else el if para analizarlo
             if (ifStatement.getElseBranch() != null) {
-                //analizaSentencia(ifStatement.getElseBranch(), tablaLocal);
+                analizaSentencia(ifStatement.getElseBranch(), tablaLocal);
             }
         }
     }
 
-    //Función para analizar qué tipo de Stmt es
+    //Función para analizar los statements
     private void analizaSentencia(Statement statement, Tabla tablaLocal) {
         switch (statement.getClass().getSimpleName()){
             case "StmtExpression":
@@ -151,27 +151,12 @@ public class Semantico {
                 analizaSentenciaPrint((StmtPrint) statement,tablaLocal);
                 break;
             case "StmtReturn":
-                analizaSentenciaReturn((StmtReturn) statement,tablaLocal);
+                //analizaSentenciaReturn((StmtReturn) statement,tablaLocal);
             case "StmtBlock":
                 analizaSentenciaBlock((StmtBlock) statement,tablaLocal);
                 break;
             default:
                 break;
-        }
-
-    }
-
-    //Función para analizar los return
-    private void analizaSentenciaReturn(StmtReturn returnStatement, Tabla tablaLocal) {
-        //Se valida si el return tiene expresión o es null
-        if (returnStatement.getExpression() != null) {
-            //Si sí tiene expresión el return, se manda a llamar la función para analizarla
-            analizaExpression(returnStatement.getExpression(), tablaLocal);
-            // Se retorna (se sube el valor retornado)
-            this.tablaRaiz.declararEnTabla("return", tablaLocal.getTablaSimbolos(), this.tablaRaiz);
-            if(returnStatement.getExpression() instanceof ExprVariable){
-                this.retornoFuncion = ((ExprVariable) returnStatement.getExpression()).getName().getLexema();
-            }
         }
     }
 
@@ -281,7 +266,7 @@ public class Semantico {
 
 
 
-    //Función para analizar los Loop (For o while)
+    //Función para analizar los Statements Expresion
     private void analizaSentenciaExpresion(StmtExpression sentenciaExpresion, Tabla tablaLocal) {
         //Se manda a llamar la función para analizar la expresión
         analizaExpression(sentenciaExpresion.getExpression(), tablaLocal);
@@ -381,7 +366,7 @@ public class Semantico {
                 //analizarExpresionBinaria((ExprBinary) expression, tablaLocal);
                 break;
             case "ExprUnary":
-                //analizarExpresionUnaria((ExprUnary) expression, tablaLocal);
+                analizarExpresionUnaria((ExprUnary) expression, tablaLocal);
                 break;
             case "ExprCallFunction":
                 analizarExpresionLlamadaFuncion((ExprCallFunction) expression, tablaLocal);
@@ -427,6 +412,12 @@ public class Semantico {
         //Se manda a llamar la función para analizar la expresión del lado Derecho
         analizaExpression(exprDerecha, tablaLocal);
 
+    }
+
+    //Función para analizar Expresiones Unarias
+    private void analizarExpresionUnaria(ExprUnary expresionUnaria, Tabla tablaLocal) {
+        //Se manda a analizar la expresión
+        analizaExpression(expresionUnaria.getOperand(), tablaLocal);
     }
 
     //Función para analizar Expresiones de llamadas a Funciones
