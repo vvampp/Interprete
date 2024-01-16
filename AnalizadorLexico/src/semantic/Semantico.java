@@ -162,6 +162,8 @@ public class Semantico {
         }
     }
 
+    //prueba cambio
+
     //Función para analizar los return
     private void analizaSentenciaReturn(StmtReturn returnStatement, Tabla tablaLocal) {
         //Se valida si el return tiene expresión o es null
