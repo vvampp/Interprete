@@ -68,7 +68,14 @@ public class Tabla {
         // El valor es diferente de null
         // o existe la llave en la tabla de símbolos
         if (valor != null || tablaSimbolos.containsKey(varNombre)) {
-            return valor;
+            if(valor instanceof ExprLiteral){
+                return ((ExprLiteral)valor).getValue();
+            }else if(valor instanceof ExprBinary){
+                return valor;
+            }else{
+                //Retorna el valor asociado
+                return valor;
+            }
         } else if (tablaPadre != null) {
             // Si el valor es nulo, significa que no está en el Hashmap, por lo que se busca en el Hashmap del padre
             return tablaPadre.retornarValor(varNombre);
