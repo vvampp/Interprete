@@ -12,4 +12,15 @@ public class ExprBinary extends Expression{
         this.right = right;
     }
 
+    public Expression getRight() {
+        return right;
+    }
+
+    public Expression getLeft() {
+        return left;
+    }
+
+    public Token getOperator() {
+        return operator;
+    }
 }

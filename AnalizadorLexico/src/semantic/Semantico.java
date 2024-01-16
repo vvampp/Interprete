@@ -99,7 +99,7 @@ public class Semantico {
         return switch (expression.getClass().getSimpleName()) {
             //Si es una expresión Binaria
             case "ExprBinary" -> {
-                //verdad = condicionBinary(expression, tablaLocal);
+                verdad = condicionBinary(expression, tablaLocal);
                 yield verdad;
             }
             // Si es una expresión logica
@@ -242,12 +242,58 @@ public class Semantico {
 
 
     //Función para analizar los Loop (For o while)
-
-
     private void analizaSentenciaExpresion(StmtExpression sentenciaExpresion, Tabla tablaLocal) {
         //Se manda a llamar la función para analizar la expresión
         analizaExpression(sentenciaExpresion.getExpression(), tablaLocal);
     }
+
+    private boolean condicionBinary(Expression expression, Tabla tablaLocal){
+        ExprBinary expresionBinaria = (ExprBinary) expression;
+        Expression exprIzquierda = expresionBinaria.getLeft();
+        Expression exprDerecha = expresionBinaria.getRight();
+
+        // Obtener los valores de las expresiones izquierda y derecha
+
+        //Object valIzq = getValue(exprIzquierda, tablaLocal);
+        Object valIzq = tablaLocal.getValor(exprIzquierda, tablaLocal);
+        Object valDer = tablaLocal.getValor(exprDerecha, tablaLocal);
+        //Object valDer = getValue(exprDerecha, tablaLocal);
+
+        // Realizar la operación binaria según el operador
+        return switch (expresionBinaria.getOperator().getTipo()) {
+            case BANG_EQUAL -> condicionBinaria(valIzq, valDer, "!=");
+            case EQUAL_EQUAL -> condicionBinaria(valIzq, valDer, "==");
+            case GREATER -> condicionBinaria(valIzq, valDer, ">");
+            case GREATER_EQUAL -> condicionBinaria(valIzq, valDer, ">=");
+            case LESS -> condicionBinaria(valIzq, valDer, "<");
+            case LESS_EQUAL -> condicionBinaria(valIzq, valDer, "<=");
+            default -> {
+                reportarError("Operador no compatible en la expresión binaria");
+                yield false;
+            }
+        };
+    }
+
+    private boolean condicionBinaria(Object valIzq, Object valDer, String operador) {
+        if (valIzq instanceof Number && valDer instanceof Number) {
+            double izqDouble = ((Number) valIzq).doubleValue();
+            double derDouble = ((Number) valDer).doubleValue();
+
+            return switch (operador) {
+                case "!=" -> izqDouble != derDouble;
+                case "==" -> izqDouble == derDouble;
+                case ">" -> izqDouble > derDouble;
+                case ">=" -> izqDouble >= derDouble;
+                case "<" -> izqDouble < derDouble;
+                case "<=" -> izqDouble <= derDouble;
+                default -> false;
+            };
+        } else {
+            reportarError("No se pueden comparar dos valores que no sean números"); // No se pueden comparar dos valores que no sean números
+            return false;
+        }
+    }
+
     // SWTICH para Expressions
     //Función para analizar las Expresiones con los tipos que se tienen
     private void analizaExpression(Expression expression, Tabla tablaLocal) {
@@ -354,10 +400,6 @@ public class Semantico {
             }
         }
     }
-
-
-
-
     //Función para analizar Expresiones de Variables
     private void analizarExpresionVariable(ExprVariable variableExpression, Tabla tablaLocal) {
         //Se obtiene el Nombre de la variable
@@ -372,4 +414,10 @@ public class Semantico {
             reportarError("Variable '" + varNombre + "' no declarada.");
         }
     }
+
+
+
+
+
+
 }
