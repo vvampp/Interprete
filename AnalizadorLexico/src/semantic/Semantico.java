@@ -89,7 +89,6 @@ public class Semantico {
             //Si no está en el Hashmap, quiere decir que no se esta re-definiendo, por lo que se guarda en la tabla de simbolos propia
             tablaLocal.declararEnTabla(nombreFuncion, declaracionFuncion, tablaLocal);
         }
-
     }
 
     //Función para EVALUAR condiciones y ver si son true o false
@@ -257,7 +256,7 @@ public class Semantico {
                 analizarExpresionAsignacion((ExprAssign) expression, tablaLocal);
                 break;
             case "ExprLogical":
-                //analizarExpresionLogica((ExprLogical) expression, tablaLocal);
+                analizarExpresionLogica((ExprLogical) expression, tablaLocal);
                 break;
             case "ExprBinary":
                 //analizarExpresionBinaria((ExprBinary) expression, tablaLocal);
@@ -295,6 +294,20 @@ public class Semantico {
             // Actualizar el valor en el ámbito local
             tablaLocal.declararEnTabla(varNombre, expresionAsignar.getValue(), tablaLocal);
         }
+    }
+
+    //Función para analizar Expresiones Lógicas (or, and)
+    private void analizarExpresionLogica(ExprLogical expLogica, Tabla tablaLocal) {
+        //Se obtiene la expresión de cada parte, de la Iquierda y Derecha
+        Expression exprIzquierda = expLogica.getLeft();
+        Expression exprDerecha = expLogica.getRight();
+
+        //Se manda a llamar la función para analizar la expresión del lado Izquierdo
+        analizaExpression(exprIzquierda, tablaLocal);
+
+        //Se manda a llamar la función para analizar la expresión del lado Derecho
+        analizaExpression(exprDerecha, tablaLocal);
+
     }
 
     //Función para analizar Expresiones de llamadas a Funciones
