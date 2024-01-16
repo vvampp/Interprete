@@ -18,7 +18,6 @@ import java.util.List;
 public class Interprete {
 
     static boolean existenErrores = false;
-    static String keyFuncion;
 
     public static void main(String[] args) throws IOException {
         if(args.length > 1) {
@@ -81,9 +80,6 @@ public class Interprete {
             return null;
         }
     }
-
-
-
 
     /*
     El método error se puede usar desde las distintas clases

@@ -100,7 +100,6 @@ public class Semantico {
     // Utilizada en analizaSentenciaIf y analizaSentenciaLoop
     private boolean analizaCondicion(Expression expression, Tabla tablaLocal){
         boolean verdad;
-        verdad = true;
         return switch (expression.getClass().getSimpleName()) {
             //Si es una expresión Binaria
             case "ExprBinary" -> {
@@ -525,10 +524,4 @@ public class Semantico {
             reportarError("Variable '" + varNombre + "' no declarada.");
         }
     }
-
-
-
-
-
-
 }
