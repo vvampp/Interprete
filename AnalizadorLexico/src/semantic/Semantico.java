@@ -274,15 +274,11 @@ public class Semantico {
         return 0;
     }
 
-
     //Se crea una tabla especifica para el sentenciaBloque basada en la tablaPadre y se analizan las declaraciones (sentencias)
     private void analizaSentenciaBlock(StmtBlock sentenciaBloque, Tabla tablaPadre) {
         Tabla tablaBloque = new Tabla(tablaPadre);
         analizarDeclarations(sentenciaBloque.getStatements(), tablaBloque);
     }
-
-
-
 
     //Función para analizar los Statements Expresion
     private void analizaSentenciaExpresion(StmtExpression sentenciaExpresion, Tabla tablaLocal) {

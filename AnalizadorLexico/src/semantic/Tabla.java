@@ -49,6 +49,12 @@ public class Tabla {
                 tablaSimbolos.put(varNombre, tablaLocal.retornarValor(nombreVariable));
                 break;
 
+            case "ExprBinary":
+                Expression expr = (Expression) valor;
+                valor = getValor(expr, tablaLocal);
+                tablaSimbolos.put(varNombre, valor);
+                break;
+
             default:
                 tablaSimbolos.put(varNombre, valor);
                 break;
