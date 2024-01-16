@@ -10,6 +10,8 @@ import java.util.List;
 
 public class Semantico {
     public final Tabla tablaRaiz; // Tabla de simbolos raiz
+    public String retornoFuncion;
+
 
     // Constructor
     public Semantico(){
@@ -49,7 +51,7 @@ public class Semantico {
                     analizaSentenciaPrint((StmtPrint) declaration, tablaLocal);
                     break;
                 case "StmtReturn":
-                    //analizaSentenciaReturn((StmtReturn) declaration, tablaLocal);
+                    analizaSentenciaReturn((StmtReturn) declaration, tablaLocal);
                     break;
                 case "StmtBlock":
                     analizaSentenciaBlock((StmtBlock) declaration, tablaLocal);
@@ -95,7 +97,6 @@ public class Semantico {
     // Utilizada en analizaSentenciaIf y analizaSentenciaLoop
     private boolean analizaCondicion(Expression expression, Tabla tablaLocal){
         boolean verdad;
-        verdad = true;
         return switch (expression.getClass().getSimpleName()) {
             //Si es una expresión Binaria
             case "ExprBinary" -> {
@@ -232,6 +233,18 @@ public class Semantico {
                 System.out.println(imprimirValor);
                 break;
 
+            // Literal
+            case 3:
+                ExprLiteral valor = (ExprLiteral) imprimirValor;
+                System.out.println(valor.getValue());
+                break;
+            case 4:
+                // Binary
+                Expression expr = (Expression) imprimirValor;
+                imprimirValor = tablaLocal.getValor(expr, tablaLocal);
+                System.out.println(imprimirValor);
+                break;
+
             default:
                 break;
         }
@@ -252,7 +265,6 @@ public class Semantico {
         else if(imprimirValor instanceof String) return 2;
         else if(imprimirValor instanceof ExprLiteral) return 3;
         else if(imprimirValor instanceof ExprBinary) return 4;
-        else if(imprimirValor instanceof Double) return 1;
         return 0;
     }
 
@@ -263,7 +275,19 @@ public class Semantico {
         analizarDeclarations(sentenciaBloque.getStatements(), tablaBloque);
     }
 
-
+    //Función para analizar los return
+    private void analizaSentenciaReturn(StmtReturn returnStatement, Tabla tablaLocal) {
+        //Se valida si el return tiene expresión o es null
+        if (returnStatement.getExpression() != null) {
+            //Si sí tiene expresión el return, se manda a llamar la función para analizarla
+            analizaExpression(returnStatement.getExpression(), tablaLocal);
+            // Se retorna (se sube el valor retornado)
+            this.tablaRaiz.declararEnTabla("return", tablaLocal.getTablaSimbolos(), this.tablaRaiz);
+            if(returnStatement.getExpression() instanceof ExprVariable){
+                this.retornoFuncion = ((ExprVariable) returnStatement.getExpression()).getName().getLexema();
+            }
+        }
+    }
 
 
     //Función para analizar los Statements Expresion
@@ -478,10 +502,5 @@ public class Semantico {
             reportarError("Variable '" + varNombre + "' no declarada.");
         }
     }
-
-
-
-
-
 
 }
