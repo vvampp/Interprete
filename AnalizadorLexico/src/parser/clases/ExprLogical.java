@@ -18,5 +18,9 @@ public class ExprLogical extends Expression{
     public Expression getRight() {
         return right;
     }
+
+    public Token getOperator() {
+        return operator;
+    }
 }
 

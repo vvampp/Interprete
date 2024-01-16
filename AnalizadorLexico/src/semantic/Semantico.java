@@ -104,12 +104,12 @@ public class Semantico {
             }
             // Si es una expresión logica
             case "ExprLogical" -> {
-                //verdad = condicionLogica(expression, tablaLocal);
+                verdad = condicionLogica(expression, tablaLocal);
                 yield verdad;
             }
             // Si es una expresión literal
             case "ExprLiteral" -> {
-                //verdad = condicionLiteral(expression, tablaLocal);
+                verdad = condicionLiteral(expression, tablaLocal);
                 yield verdad;
             }
             default -> false;
@@ -298,7 +298,6 @@ public class Semantico {
             }
         };
     }
-
     private boolean condicionBinaria(Object valIzq, Object valDer, String operador) {
         if (valIzq instanceof Number && valDer instanceof Number) {
             double izqDouble = ((Number) valIzq).doubleValue();
@@ -317,6 +316,40 @@ public class Semantico {
             reportarError("No se pueden comparar dos valores que no sean números"); // No se pueden comparar dos valores que no sean números
             return false;
         }
+    }
+
+    private boolean condicionLogica(Expression expression, Tabla tablaLocal){
+        ExprLogical expLogica = (ExprLogical) expression;
+        Expression exprIzquierda = expLogica.getLeft();
+        Expression exprDerecha = expLogica.getRight();
+
+        //Se obtienen los booleanos de ambas expresiones para compararlas
+        boolean izqBoolean, derBoolean;
+        izqBoolean = analizaCondicion(exprIzquierda, tablaLocal);
+        derBoolean = analizaCondicion(exprDerecha, tablaLocal);
+
+        return switch (expLogica.getOperator().getTipo()) {
+            case AND -> operacionLogica(izqBoolean, derBoolean, "and");
+            case OR -> operacionLogica(izqBoolean, derBoolean, "or");
+            default -> {
+                reportarError("Operador no compatible en la expresión lógica");
+                yield false;
+            }
+        };
+    }
+    private boolean operacionLogica(boolean izqBoolean, boolean derBoolean, String operador){
+        return switch (operador) {
+            case "and" -> izqBoolean && derBoolean;
+            case "or" -> izqBoolean || derBoolean;
+            default -> false;
+        };
+    }
+
+    private boolean condicionLiteral(Expression expression, Tabla tablaLocal){
+        ExprLiteral expr = (ExprLiteral) expression;
+        Object exprValor = expr.getValue();
+        boolean exprBoolean = (Boolean) exprValor;
+        return exprBoolean;
     }
 
     // SWTICH para Expressions
