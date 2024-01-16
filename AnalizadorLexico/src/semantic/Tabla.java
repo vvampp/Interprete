@@ -1,8 +1,10 @@
 package semantic;
 
 import parser.clases.*;
+import tokens.Token;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Tabla {
@@ -63,8 +65,10 @@ public class Tabla {
 
     //Función para retornar el valor de la variable si está en el Hashmap
     public Object retornarValor(String varNombre) {
+
         //Se le asigna el valor que está asociado al nombre de la Variable a buscar
         Object valor = tablaSimbolos.get(varNombre);
+
         // El valor es diferente de null
         // o existe la llave en la tabla de símbolos
         if (valor != null || tablaSimbolos.containsKey(varNombre)) {
@@ -107,15 +111,15 @@ public class Tabla {
         } else if (expression instanceof ExprLiteral) {
             return ((ExprLiteral) expression).getValue();
         } else if (expression instanceof ExprBinary) {
-            //return evaluarExpresionBinaria((ExprBinary) expression, tablaLocal);
+            return evaluarExpresionBinaria((ExprBinary) expression, tablaLocal);
         } else if(expression instanceof ExprCallFunction){
             // Caso especial para los returns de las funciones
-            //return evaluarLlamadaFuncion((ExprCallFunction) expression, tablaLocal);
+            return evaluarLlamadaFuncion((ExprCallFunction) expression, tablaLocal);
         }
         return null;
     }
 
-    // Función para evaluar una expresión binaria y retornar el resultado
+    // Función para  una expresión binaria y retornar su resultado
     public Object evaluarExpresionBinaria(ExprBinary expresionBinaria, Tabla tablaLocal) {
         Expression exprIzquierda = expresionBinaria.getLeft();
         Expression exprDerecha = expresionBinaria.getRight();
@@ -127,19 +131,73 @@ public class Tabla {
         // Realizar la operación binaria según el operador
         switch (expresionBinaria.getOperator().getTipo()) {
             case PLUS:
-                //return operacionBinaria(valIzq, valDer, "+");
+                return operacionBinaria(valIzq, valDer, "+");
             case MINUS:
-                //return operacionBinaria(valIzq, valDer, "-");
+                return operacionBinaria(valIzq, valDer, "-");
             case STAR:
-                //return operacionBinaria(valIzq, valDer, "*");
+                return operacionBinaria(valIzq, valDer, "*");
             case SLASH:
-                //return operacionBinaria(valIzq, valDer, "/");
+                return operacionBinaria(valIzq, valDer, "/");
 
             default:
                 // Manejo de error para operadores no compatibles
                 reportarError("Operador no compatible en la expresión binaria");
                 return null;
         }
+    }
+
+    // Funcion para evaluar una exprbinaria
+    private Object operacionBinaria(Object valIzq, Object valDer, String operador){
+        if(valIzq instanceof Number && valDer instanceof Number){
+            switch (operador){
+                case "+":
+                    return ((Number) valIzq).doubleValue() + ((Number) valDer).doubleValue();
+                case "-":
+                    return ((Number) valIzq).doubleValue() - ((Number) valDer).doubleValue();
+                case "*":
+                    return ((Number) valIzq).doubleValue() * ((Number) valDer).doubleValue();
+                case "/":
+                    return ((Number) valIzq).doubleValue() / ((Number) valDer).doubleValue();
+                default:
+                    reportarError("No se pueden operar valores de tipos no compatibles");
+                    return null;
+            }
+        } else if(valIzq instanceof String && valDer instanceof String){
+            switch (operador){
+                case "+":
+                    return String.valueOf(valIzq) + String.valueOf(valDer);
+                default:
+                    reportarError("No se pueden sumar valores de tipos no compatibles");
+                    return null;
+            }
+        } else {
+            reportarError("No se pueden operar valores de tipos no compatibles");
+            return null;
+        }
+    }
+
+    //Funcion para evaluar una expresion de llamada a funcion
+    public Object evaluarLlamadaFuncion(ExprCallFunction expresionLlamadaFuncion, Tabla tablaLocal){
+        String nombreFuncion = ((ExprVariable) expresionLlamadaFuncion.getCallee()).getName().getLexema();
+        StmtFunction declaracionFuncion = (StmtFunction) tablaLocal.retornarValor(nombreFuncion);
+        List<Token> parametros = declaracionFuncion.getParameters();
+        Statement primeraInstruccion = declaracionFuncion.getBody().getStatements().get(0);
+
+        for(int i = 0; i < expresionLlamadaFuncion.getArguments().size(); i++){
+            String paramNombre = parametros.get(i).getLexema();
+
+            Expression arguVal = expresionLlamadaFuncion.getArguments().get(i);
+            tablaLocal.declararEnTabla(paramNombre, arguVal, tablaLocal);
+
+        }
+
+        if(primeraInstruccion instanceof StmtReturn && ((StmtReturn) primeraInstruccion).getExpression() instanceof ExprBinary){
+            return evaluarExpresionBinaria( (ExprBinary) ((StmtReturn) primeraInstruccion).getExpression(), tablaLocal);
+        } else if(tablaLocal.getTablaSimbolos().containsKey("return")){
+            return tablaLocal.getTablaSimbolos().get("return");
+        }
+
+        return null;
     }
 
 
