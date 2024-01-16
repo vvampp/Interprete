@@ -26,7 +26,6 @@ public class Semantico {
 
     // Función para escribir el mensaje de Error
     private void reportarError(String mensaje) {
-        //throw new RuntimeException("Error Semántico: " + mensaje);
         System.out.println("Error Semántico: " + mensaje);
     }
 
@@ -74,8 +73,11 @@ public class Semantico {
         //Se verifica si el identificador ya ha sido ingresada en la tabla de simbolos propia o en la de su padre/ancestro
         if (tablaLocal.siEstaDefinida(varNombre)) {
             reportarError("Variable '" + varNombre + "' re-definicion.");
-        }
-        else {
+        } else if(declarationVar.getInitializer() instanceof ExprCallFunction){
+            analizaExpression(declarationVar.getInitializer(), tablaLocal);
+            //tablaLocal.declararEnTabla(varNombre, declarationVar.getInitializer(), tablaLocal);
+            tablaLocal.declararEnTabla(varNombre, this.tablaRaiz.getTablaSimbolos().get("return"), tablaLocal);
+        } else {
             tablaLocal.declararEnTabla(varNombre, declarationVar.getInitializer(), tablaLocal);
         }
 
@@ -161,8 +163,6 @@ public class Semantico {
                 break;
         }
     }
-
-    //prueba cambio
 
     //Función para analizar los return
     private void analizaSentenciaReturn(StmtReturn returnStatement, Tabla tablaLocal) {
