@@ -379,7 +379,7 @@ public class Semantico {
                 analizarExpresionLogica((ExprLogical) expression, tablaLocal);
                 break;
             case "ExprBinary":
-                //analizarExpresionBinaria((ExprBinary) expression, tablaLocal);
+                analizarExpresionBinaria((ExprBinary) expression, tablaLocal);
                 break;
             case "ExprUnary":
                 analizarExpresionUnaria((ExprUnary) expression, tablaLocal);
@@ -428,6 +428,20 @@ public class Semantico {
         //Se manda a llamar la función para analizar la expresión del lado Derecho
         analizaExpression(exprDerecha, tablaLocal);
 
+    }
+
+    //Función para analizar Expresiones Binarias (Operaciones aritméticas)
+    private void analizarExpresionBinaria(ExprBinary expresionBinaria, Tabla tablaLocal) {
+
+        //Se obtiene la expresión de cada parte, de la Iquierda y Derecha
+        Expression exprIzquierda = expresionBinaria.getLeft();
+        Expression exprDerecha = expresionBinaria.getRight();
+
+        //Se manda a llamar la función para analizar la expresión del lado Izquierdo
+        analizaExpression(exprIzquierda, tablaLocal);
+
+        //Se manda a llamar la función para analizar la expresión del lado Derecho
+        analizaExpression(exprDerecha, tablaLocal);
     }
 
     //Función para analizar Expresiones Unarias
