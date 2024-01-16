@@ -126,12 +126,37 @@ public class Semantico {
         // Se verifica si la condicion evaluada es true o false
         if(analizaCondicion(ifStatement.getCondition(), tablaLocal)){
             //Se manda a llamar la función para analizar el cuerpo del If
-            //analizaSentencia(ifStatement.getThenBranch(), tablaLocal);
+                analizaSentencia(ifStatement.getThenBranch(), tablaLocal);
         }else{
             //Se valida si tiene un else el if para analizarlo
             if (ifStatement.getElseBranch() != null) {
-                //analizaSentencia(ifStatement.getElseBranch(), tablaLocal);
+                analizaSentencia(ifStatement.getElseBranch(), tablaLocal);
             }
+        }
+    }
+
+    //Función para analizar los statements
+    private void analizaSentencia(Statement statement, Tabla tablaLocal) {
+        switch (statement.getClass().getSimpleName()){
+            case "StmtExpression":
+                analizaSentenciaExpresion((StmtExpression) statement, tablaLocal);
+                break;
+            case "StmtIf":
+                analizaSentenciaIf((StmtIf) statement, tablaLocal);
+                break;
+            case "StmtLoop":
+                analizaSentenciaLoop((StmtLoop) statement,tablaLocal);
+                break;
+            case "StmtPrint":
+                analizaSentenciaPrint((StmtPrint) statement,tablaLocal);
+                break;
+            case "StmtReturn":
+                //analizaSentenciaReturn((StmtReturn) statement,tablaLocal);
+            case "StmtBlock":
+                analizaSentenciaBlock((StmtBlock) statement,tablaLocal);
+                break;
+            default:
+                break;
         }
     }
 
@@ -241,7 +266,7 @@ public class Semantico {
 
 
 
-    //Función para analizar los Loop (For o while)
+    //Función para analizar los Statements Expresion
     private void analizaSentenciaExpresion(StmtExpression sentenciaExpresion, Tabla tablaLocal) {
         //Se manda a llamar la función para analizar la expresión
         analizaExpression(sentenciaExpresion.getExpression(), tablaLocal);
