@@ -78,6 +78,7 @@ public class Semantico {
             //tablaLocal.declararEnTabla(varNombre, declarationVar.getInitializer(), tablaLocal);
             tablaLocal.declararEnTabla(varNombre, this.tablaRaiz.getTablaSimbolos().get("return"), tablaLocal);
         } else {
+            //Si no está en la tabla de simbolos, quiere decir que no se esta re-definiendo, por lo que se guarda en la tabla de simbolos propia
             tablaLocal.declararEnTabla(varNombre, declarationVar.getInitializer(), tablaLocal);
         }
 
@@ -228,6 +229,10 @@ public class Semantico {
 
         // Obtén el valor de la expresión a imprimir
         Object imprimirValor = tablaLocal.getValor(imprimirSentencia.getExpression(), tablaLocal);
+        if(imprimirValor instanceof HashMap<?,?>){
+            imprimirValor = this.tablaRaiz.getTablaSimbolos().get("return");
+            imprimirValor = ((HashMap<?, ?>) imprimirValor).get(this.retornoFuncion);
+        }
 
         // determina el tipo de expresión print se tiene
         int tipoPrint = evaluarTipoPrint(imprimirSentencia, tablaLocal);
@@ -250,6 +255,17 @@ public class Semantico {
                 System.out.println(imprimirValor);
                 break;
 
+            case 3:
+                ExprLiteral valor = (ExprLiteral) imprimirValor;
+                System.out.println(valor.getValue());
+                break;
+            case 4:
+                // Binary
+                Expression expr = (Expression) imprimirValor;
+                imprimirValor = tablaLocal.getValor(expr, tablaLocal);
+                System.out.println(imprimirValor);
+                break;
+
             default:
                 break;
         }
@@ -263,6 +279,10 @@ public class Semantico {
 
         // Obtén el valor de la expresión a imprimir
         Object imprimirValor = tablaLocal.getValor(imprimirSentencia.getExpression(), tablaLocal);
+        if(imprimirValor instanceof HashMap<?,?>){
+            imprimirValor = this.tablaRaiz.getTablaSimbolos().get("return");
+            imprimirValor = ((HashMap<?, ?>) imprimirValor).get(this.retornoFuncion);
+        }
 
         // retorna el valor de la instancia como String para el switch de la función principal
         // de análisis de la sentencia print
@@ -270,7 +290,6 @@ public class Semantico {
         else if(imprimirValor instanceof String) return 2;
         else if(imprimirValor instanceof ExprLiteral) return 3;
         else if(imprimirValor instanceof ExprBinary) return 4;
-        else if(imprimirValor instanceof Double) return 1;
         return 0;
     }
 
