@@ -366,7 +366,7 @@ public class Semantico {
                 //analizarExpresionBinaria((ExprBinary) expression, tablaLocal);
                 break;
             case "ExprUnary":
-                //analizarExpresionUnaria((ExprUnary) expression, tablaLocal);
+                analizarExpresionUnaria((ExprUnary) expression, tablaLocal);
                 break;
             case "ExprCallFunction":
                 analizarExpresionLlamadaFuncion((ExprCallFunction) expression, tablaLocal);
@@ -412,6 +412,12 @@ public class Semantico {
         //Se manda a llamar la función para analizar la expresión del lado Derecho
         analizaExpression(exprDerecha, tablaLocal);
 
+    }
+
+    //Función para analizar Expresiones Unarias
+    private void analizarExpresionUnaria(ExprUnary expresionUnaria, Tabla tablaLocal) {
+        //Se manda a analizar la expresión
+        analizaExpression(expresionUnaria.getOperand(), tablaLocal);
     }
 
     //Función para analizar Expresiones de llamadas a Funciones
