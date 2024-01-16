@@ -104,9 +104,48 @@ public class Tabla {
             }else{
                 return valor;
             }
+        } else if (expression instanceof ExprLiteral) {
+            return ((ExprLiteral) expression).getValue();
+        } else if (expression instanceof ExprBinary) {
+            //return evaluarExpresionBinaria((ExprBinary) expression, tablaLocal);
+        } else if(expression instanceof ExprCallFunction){
+            // Caso especial para los returns de las funciones
+            //return evaluarLlamadaFuncion((ExprCallFunction) expression, tablaLocal);
         }
         return null;
     }
 
+    // Función para evaluar una expresión binaria y retornar el resultado
+    public Object evaluarExpresionBinaria(ExprBinary expresionBinaria, Tabla tablaLocal) {
+        Expression exprIzquierda = expresionBinaria.getLeft();
+        Expression exprDerecha = expresionBinaria.getRight();
+
+        // Obtener los valores de las expresiones izquierda y derecha
+        Object valIzq = getValor(exprIzquierda, tablaLocal);
+        Object valDer = getValor(exprDerecha, tablaLocal);
+
+        // Realizar la operación binaria según el operador
+        switch (expresionBinaria.getOperator().getTipo()) {
+            case PLUS:
+                //return operacionBinaria(valIzq, valDer, "+");
+            case MINUS:
+                //return operacionBinaria(valIzq, valDer, "-");
+            case STAR:
+                //return operacionBinaria(valIzq, valDer, "*");
+            case SLASH:
+                //return operacionBinaria(valIzq, valDer, "/");
+
+            default:
+                // Manejo de error para operadores no compatibles
+                reportarError("Operador no compatible en la expresión binaria");
+                return null;
+        }
+    }
+
+
+    // Función para escribir el mensaje de Error
+    private void reportarError(String mensaje) {
+        System.out.println("Error Semántico: " + mensaje);
+    }
 
 }
