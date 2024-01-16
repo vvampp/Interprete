@@ -10,7 +10,7 @@ import java.util.List;
 
 public class Semantico {
     public final Tabla tablaRaiz; // Tabla de simbolos raiz
-
+    public String retornoFuncion;
     // Constructor
     public Semantico(){
         // Se crea un objeto tipo Tabla de Simbolos donde el padre es null, porque esta es la raiz del arbol
@@ -131,6 +131,46 @@ public class Semantico {
             //Se valida si tiene un else el if para analizarlo
             if (ifStatement.getElseBranch() != null) {
                 //analizaSentencia(ifStatement.getElseBranch(), tablaLocal);
+            }
+        }
+    }
+
+    //Función para analizar qué tipo de Stmt es
+    private void analizaSentencia(Statement statement, Tabla tablaLocal) {
+        switch (statement.getClass().getSimpleName()){
+            case "StmtExpression":
+                analizaSentenciaExpresion((StmtExpression) statement, tablaLocal);
+                break;
+            case "StmtIf":
+                analizaSentenciaIf((StmtIf) statement, tablaLocal);
+                break;
+            case "StmtLoop":
+                analizaSentenciaLoop((StmtLoop) statement,tablaLocal);
+                break;
+            case "StmtPrint":
+                analizaSentenciaPrint((StmtPrint) statement,tablaLocal);
+                break;
+            case "StmtReturn":
+                analizaSentenciaReturn((StmtReturn) statement,tablaLocal);
+            case "StmtBlock":
+                analizaSentenciaBlock((StmtBlock) statement,tablaLocal);
+                break;
+            default:
+                break;
+        }
+
+    }
+
+    //Función para analizar los return
+    private void analizaSentenciaReturn(StmtReturn returnStatement, Tabla tablaLocal) {
+        //Se valida si el return tiene expresión o es null
+        if (returnStatement.getExpression() != null) {
+            //Si sí tiene expresión el return, se manda a llamar la función para analizarla
+            analizaExpression(returnStatement.getExpression(), tablaLocal);
+            // Se retorna (se sube el valor retornado)
+            this.tablaRaiz.declararEnTabla("return", tablaLocal.getTablaSimbolos(), this.tablaRaiz);
+            if(returnStatement.getExpression() instanceof ExprVariable){
+                this.retornoFuncion = ((ExprVariable) returnStatement.getExpression()).getName().getLexema();
             }
         }
     }

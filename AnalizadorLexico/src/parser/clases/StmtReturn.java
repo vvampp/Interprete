@@ -6,4 +6,8 @@ public class StmtReturn extends Statement {
     public StmtReturn(Expression value) {
         this.value = value;
     }
+
+    public Expression getExpression() {
+        return value;
+    }
 }
